@@ -1,0 +1,6 @@
+{
+  "name": "Bigbangbarber",
+  "description": "เว็ปแอปพลิเคชันจองคิวตัดผมออนไลน์สำหรับมือถือ เลือกระบุช่างตัดผม 3 สไตล์ พร้อมระบบเช็คเวลาว่างแบบเรียลไทม์และบันทึกข้อมูลผ่าน Firebase",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
