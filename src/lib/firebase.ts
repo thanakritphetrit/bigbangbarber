@@ -12,10 +12,11 @@ import {
   where, 
   orderBy, 
   getDocs,
+  getDoc,
   serverTimestamp
 } from 'firebase/firestore';
-import { Booking, Barber, BarberService, BookingStatus } from '../types';
-import { INITIAL_BARBERS, INITIAL_SERVICES } from '../data/mockData';
+import { Booking, Barber, BarberService, BookingStatus, ShopInfo } from '../types';
+import { INITIAL_BARBERS, INITIAL_SERVICES, SHOP_INFO } from '../data/mockData';
 import firebaseConfigJson from '../../firebase-applet-config.json';
 
 const firebaseConfig = {
@@ -37,9 +38,14 @@ export const db = firebaseConfigJson.firestoreDatabaseId && firebaseConfigJson.f
 const BOOKINGS_COLLECTION = 'bookings';
 const BARBERS_COLLECTION = 'barbers';
 const SERVICES_COLLECTION = 'services';
+const SHOP_INFO_COLLECTION = 'shop_info';
+const SHOP_INFO_DOC = 'main';
 
 // Local storage backup keys for offline resilience
 const LOCAL_BOOKINGS_KEY = 'bbb_bookings_cache';
+const LOCAL_BARBERS_KEY = 'bbb_barbers';
+const LOCAL_SERVICES_KEY = 'bbb_services';
+const LOCAL_SHOP_INFO_KEY = 'bbb_shop_info';
 
 /**
  * Generate a unique 4-character uppercase alphanumeric booking code
@@ -207,10 +213,184 @@ export async function deleteBooking(bookingId: string): Promise<void> {
 }
 
 /**
- * Initialize sample barbers in Firestore if database is empty
+ * Listen to Shop Info from Firestore in real time
+ */
+export function subscribeToShopInfo(onUpdate: (shopInfo: ShopInfo) => void) {
+  try {
+    const docRef = doc(db, SHOP_INFO_COLLECTION, SHOP_INFO_DOC);
+    return onSnapshot(docRef, (docSnap) => {
+      if (docSnap.exists()) {
+        const data = docSnap.data() as ShopInfo;
+        const merged: ShopInfo = {
+          ...SHOP_INFO,
+          ...data,
+          logoUrl: data.logoUrl || '/logo.jpg'
+        };
+        try {
+          localStorage.setItem(LOCAL_SHOP_INFO_KEY, JSON.stringify(merged));
+        } catch {
+          // ignore
+        }
+        onUpdate(merged);
+      }
+    }, (err) => {
+      console.warn('Firestore shop_info subscribe error:', err);
+    });
+  } catch (e) {
+    console.error('Error subscribing to shop info:', e);
+    return () => {};
+  }
+}
+
+/**
+ * Save Shop Info to Firestore
+ */
+export async function saveShopInfoToFirestore(info: ShopInfo): Promise<void> {
+  try {
+    const docRef = doc(db, SHOP_INFO_COLLECTION, SHOP_INFO_DOC);
+    await setDoc(docRef, {
+      ...info,
+      updatedAt: Date.now()
+    }, { merge: true });
+    try {
+      localStorage.setItem(LOCAL_SHOP_INFO_KEY, JSON.stringify(info));
+    } catch {
+      // ignore
+    }
+  } catch (err) {
+    console.error('Failed to update shop_info in Firestore:', err);
+    throw err;
+  }
+}
+
+/**
+ * Listen to Barbers in real time
+ */
+export function subscribeToBarbers(onUpdate: (barbers: Barber[]) => void) {
+  try {
+    const q = query(collection(db, BARBERS_COLLECTION));
+    return onSnapshot(q, (snap) => {
+      if (!snap.empty) {
+        const list: Barber[] = [];
+        snap.forEach(d => {
+          list.push({ ...d.data(), id: d.id } as Barber);
+        });
+        try {
+          localStorage.setItem(LOCAL_BARBERS_KEY, JSON.stringify(list));
+        } catch {
+          // ignore
+        }
+        onUpdate(list);
+      }
+    }, (err) => {
+      console.warn('Firestore barbers subscribe error:', err);
+    });
+  } catch (e) {
+    console.error('Error subscribing to barbers:', e);
+    return () => {};
+  }
+}
+
+/**
+ * Save / Update Barber in Firestore
+ */
+export async function saveBarberToFirestore(barber: Barber): Promise<void> {
+  try {
+    const docRef = doc(db, BARBERS_COLLECTION, barber.id);
+    await setDoc(docRef, {
+      ...barber,
+      updatedAt: Date.now()
+    }, { merge: true });
+  } catch (err) {
+    console.error('Failed to save barber to Firestore:', err);
+    throw err;
+  }
+}
+
+/**
+ * Delete Barber from Firestore
+ */
+export async function deleteBarberFromFirestore(barberId: string): Promise<void> {
+  try {
+    const docRef = doc(db, BARBERS_COLLECTION, barberId);
+    await deleteDoc(docRef);
+  } catch (err) {
+    console.error('Failed to delete barber from Firestore:', err);
+    throw err;
+  }
+}
+
+/**
+ * Listen to Services in real time
+ */
+export function subscribeToServices(onUpdate: (services: BarberService[]) => void) {
+  try {
+    const q = query(collection(db, SERVICES_COLLECTION));
+    return onSnapshot(q, (snap) => {
+      if (!snap.empty) {
+        const list: BarberService[] = [];
+        snap.forEach(d => {
+          list.push({ ...d.data(), id: d.id } as BarberService);
+        });
+        try {
+          localStorage.setItem(LOCAL_SERVICES_KEY, JSON.stringify(list));
+        } catch {
+          // ignore
+        }
+        onUpdate(list);
+      }
+    }, (err) => {
+      console.warn('Firestore services subscribe error:', err);
+    });
+  } catch (e) {
+    console.error('Error subscribing to services:', e);
+    return () => {};
+  }
+}
+
+/**
+ * Save / Update Service in Firestore
+ */
+export async function saveServiceToFirestore(service: BarberService): Promise<void> {
+  try {
+    const docRef = doc(db, SERVICES_COLLECTION, service.id);
+    await setDoc(docRef, {
+      ...service,
+      updatedAt: Date.now()
+    }, { merge: true });
+  } catch (err) {
+    console.error('Failed to save service to Firestore:', err);
+    throw err;
+  }
+}
+
+/**
+ * Delete Service from Firestore
+ */
+export async function deleteServiceFromFirestore(serviceId: string): Promise<void> {
+  try {
+    const docRef = doc(db, SERVICES_COLLECTION, serviceId);
+    await deleteDoc(docRef);
+  } catch (err) {
+    console.error('Failed to delete service from Firestore:', err);
+    throw err;
+  }
+}
+
+/**
+ * Initialize sample barbers, services, and shop info in Firestore if database is empty
  */
 export async function initializeFirestoreData(): Promise<void> {
   try {
+    // Check shop info doc
+    const shopSnap = await getDoc(doc(db, SHOP_INFO_COLLECTION, SHOP_INFO_DOC));
+    if (!shopSnap.exists()) {
+      await setDoc(doc(db, SHOP_INFO_COLLECTION, SHOP_INFO_DOC), {
+        ...SHOP_INFO,
+        createdAt: Date.now()
+      });
+    }
+
     const barbersSnap = await getDocs(collection(db, BARBERS_COLLECTION));
     if (barbersSnap.empty) {
       for (const barber of INITIAL_BARBERS) {
@@ -229,3 +409,70 @@ export async function initializeFirestoreData(): Promise<void> {
     console.warn('Notice: Firestore seed check:', err);
   }
 }
+
+/**
+ * Seed realistic sample bookings for testing
+ */
+export async function seedSampleBookings(): Promise<void> {
+  const today = new Date().toISOString().slice(0, 10);
+  const sampleList: Omit<Booking, 'id'>[] = [
+    {
+      bookingCode: 'BBB-A892',
+      customerName: 'คุณกวิน ภักดี',
+      customerPhone: '0812345678',
+      customerNote: 'ขอทรงวินเทจ Pompadour ไถเปิดข้าง',
+      barberId: 'barber_ek',
+      barberName: 'ช่างเอก (Master Ek)',
+      serviceId: 'srv_cut_wash',
+      serviceName: 'ตัดผม + สระไดร์นวดศีรษะ',
+      servicePrice: 450,
+      durationMinutes: 60,
+      date: today,
+      timeSlot: '11:00',
+      status: 'confirmed',
+      createdAt: Date.now() - 3600000
+    },
+    {
+      bookingCode: 'BBB-B410',
+      customerName: 'คุณนรินทร์ วัฒนา',
+      customerPhone: '0898765432',
+      customerNote: 'เซ็ต Two-block สไตล์เกาหลี',
+      barberId: 'barber_boss',
+      barberName: 'ช่างบอส (Stylist Boss)',
+      serviceId: 'srv_cut_style',
+      serviceName: 'ตัดผม + เซ็ตทรงพรีเมียม',
+      servicePrice: 350,
+      durationMinutes: 45,
+      date: today,
+      timeSlot: '13:00',
+      status: 'in_progress',
+      createdAt: Date.now() - 1800000
+    },
+    {
+      bookingCode: 'BBB-C751',
+      customerName: 'คุณธนภพ อัครเดช',
+      customerPhone: '0865551234',
+      customerNote: 'สกินเฟด 0 mm. และกันเครา',
+      barberId: 'barber_jack',
+      barberName: 'ช่างแจ็ค (Barber Jack)',
+      serviceId: 'srv_full_vip',
+      serviceName: 'VIP Full Grooming Package',
+      servicePrice: 850,
+      durationMinutes: 90,
+      date: today,
+      timeSlot: '15:00',
+      status: 'confirmed',
+      createdAt: Date.now() - 7200000
+    }
+  ];
+
+  for (const item of sampleList) {
+    try {
+      await createBooking(item);
+    } catch (e) {
+      console.error(e);
+    }
+  }
+}
+
+

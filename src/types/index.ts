@@ -54,3 +54,21 @@ export interface TimeSlotOption {
   reason?: string;
   bookedBarberIds: string[];
 }
+
+export interface ShopInfo {
+  name: string;
+  tagline: string;
+  address: string;
+  phone: string;
+  openHours: string;
+  openDaysText: string;
+  lineId: string;
+  instagram: string;
+  facebook?: string;
+  googleMapsUrl: string;
+  logoUrl?: string;
+  hasWifi?: boolean;
+  hasBeverages?: boolean;
+  hasParking?: boolean;
+  policyNote?: string;
+}

@@ -1,4 +1,4 @@
-import { Barber, BarberService } from '../types';
+import { Barber, BarberService, ShopInfo } from '../types';
 
 export const INITIAL_BARBERS: Barber[] = [
   {
@@ -41,8 +41,8 @@ export const INITIAL_BARBERS: Barber[] = [
     nickname: 'ช่างแจ็ค (Barber Jack)',
     title: 'Street Barber & Razor Artist',
     experienceYears: 8,
-    avatar: 'https://images.unsplash.com/photo-1517832606589-7629c3395909?w=500&auto=format&fit=crop&q=80',
-    coverImage: 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?w=800&auto=format&fit=crop&q=80',
+    avatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=500&auto=format&fit=crop&q=80',
+    coverImage: 'https://images.unsplash.com/photo-1585747860715-2ba37e788b70?w=800&auto=format&fit=crop&q=80',
     bio: 'สไตล์สตรีท บัซคัท สกินเฟด และการกรีดลาย Hair Tattoo ใบมีดโกนแม่นยำ พร้อมการตัดแต่งหนวดเคราและจัดแต่งทรงแนว Old School',
     specialties: ['Skin Fade 0 mm.', 'Buzz Cut / Crew Cut', 'Hair Tattoo / แกะลาย', 'Beard Grooming'],
     rating: 4.9,
@@ -127,14 +127,20 @@ export const TIME_SLOTS: string[] = [
   '19:00'
 ];
 
-export const SHOP_INFO = {
-  name: 'Bigbangbarber',
-  tagline: 'Premium Grooming & Modern Gentlemen Barbershop',
+export const SHOP_INFO: ShopInfo = {
+  name: 'BIGBANG BARBER',
+  tagline: 'THONGLOR • GENTLEMEN GROOMING',
   address: '142/8 ถนนสุขุมวิท ซอย 55 (ทองหล่อ) แขวงคลองตันเหนือ เขตวัฒนา กรุงเทพฯ 10110',
   phone: '089-765-4321',
-  openHours: 'เปิดบริการทุกวัน 10:00 - 20:00 น.',
+  openHours: '10:00 - 20:00',
+  openDaysText: 'OPEN EVERYDAY',
   lineId: '@bigbangbarber',
   instagram: '@bigbangbarber.bkk',
   facebook: 'Bigbangbarber Bangkok',
-  googleMapsUrl: 'https://maps.google.com'
+  googleMapsUrl: 'https://maps.google.com/?q=Bigbang+Barber+Thonglor',
+  logoUrl: '/logo.jpg',
+  hasWifi: true,
+  hasBeverages: true,
+  hasParking: true,
+  policyNote: 'รองรับเงินสด, โอนผ่านพร้อมเพย์ (PromptPay), และบัตรเครดิตทุกธนาคาร ไม่มีค่าธรรมเนียม'
 };

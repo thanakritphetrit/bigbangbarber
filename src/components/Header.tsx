@@ -1,67 +1,119 @@
 import React from 'react';
-import { Scissors, Calendar, Clock, MapPin, Phone, Users, ShieldCheck } from 'lucide-react';
-import { SHOP_INFO } from '../data/mockData';
+import { Scissors, Calendar, Clock, MapPin, Phone, Users, ShieldCheck, Sparkles, Settings, Lock, Unlock } from 'lucide-react';
+import { ShopInfo } from '../types';
 
 interface HeaderProps {
   activeTab: 'book' | 'my-bookings' | 'queue-board';
   setActiveTab: (tab: 'book' | 'my-bookings' | 'queue-board') => void;
   onOpenShopInfo: () => void;
+  onOpenSettings: () => void;
   totalActiveBookingsToday: number;
+  shopInfo: ShopInfo;
+  isAdminUnlocked?: boolean;
+  onToggleAdminLock?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
   activeTab,
   setActiveTab,
   onOpenShopInfo,
-  totalActiveBookingsToday
+  onOpenSettings,
+  totalActiveBookingsToday,
+  shopInfo,
+  isAdminUnlocked = false,
+  onToggleAdminLock
 }) => {
   return (
-    <header className="sticky top-0 z-30 bg-stone-950/95 backdrop-blur-md border-b border-stone-800 shadow-xl">
-      {/* Top Banner Notice */}
-      <div className="bg-gradient-to-r from-amber-700 via-amber-600 to-amber-800 text-stone-950 px-3 py-1 text-xs font-medium flex items-center justify-between">
-        <div className="flex items-center gap-1.5 truncate">
-          <span className="inline-block w-2 h-2 rounded-full bg-stone-950 animate-pulse" />
-          <span className="truncate">Bigbangbarber ทองหล่อ • เปิด 10:00 - 20:00 น.</span>
+    <header className="sticky top-0 z-30 bg-[#0A0A0B]/95 backdrop-blur-md border-b border-white/10 shadow-2xl">
+      {/* Top Status Bar Notice */}
+      <div className="bg-[#121418] border-b border-white/5 text-gray-300 px-4 py-2 text-xs flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+          <span className="text-[10px] font-mono text-gray-300 tracking-tighter uppercase font-medium">
+            Firebase: bigbangbarber-2f657
+          </span>
         </div>
-        <button
-          onClick={onOpenShopInfo}
-          className="flex items-center gap-1 underline text-stone-950 hover:text-stone-900 font-semibold cursor-pointer shrink-0 ml-2"
-        >
-          <MapPin className="w-3 h-3" />
-          <span>แผนที่ร้าน</span>
-        </button>
+
+        <div className="flex items-center gap-3">
+          {onToggleAdminLock && (
+            <button
+              type="button"
+              onClick={onToggleAdminLock}
+              className={`flex items-center gap-1 text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full transition-all cursor-pointer ${
+                isAdminUnlocked
+                  ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 hover:bg-emerald-500/30'
+                  : 'bg-white/5 text-gray-400 border border-white/10 hover:text-white hover:border-white/20'
+              }`}
+              title={isAdminUnlocked ? 'คลิกเพื่อล็อกโหมดแก้ไข (Lock Admin)' : 'คลิกเพื่อใส่รหัสปลดล็อกโหมดแก้ไข'}
+            >
+              {isAdminUnlocked ? (
+                <>
+                  <Unlock className="w-3 h-3 text-emerald-400" />
+                  <span>ADMIN UNLOCKED</span>
+                </>
+              ) : (
+                <>
+                  <Lock className="w-3 h-3 text-gray-400" />
+                  <span>LOCKED (PIN: 1234)</span>
+                </>
+              )}
+            </button>
+          )}
+
+          <button
+            onClick={onOpenShopInfo}
+            className="flex items-center gap-1 text-[11px] uppercase font-bold text-[#FACC15] hover:underline cursor-pointer shrink-0"
+          >
+            <MapPin className="w-3 h-3" />
+            <span>{shopInfo.openHours || '10:00-20:00'}</span>
+          </button>
+        </div>
       </div>
 
-      {/* Main Header Brand */}
-      <div className="max-w-md mx-auto px-4 py-3 flex items-center justify-between">
+      {/* Main Header Brand - Bold Typography Style */}
+      <div className="max-w-md mx-auto px-4 py-3.5 flex items-center justify-between">
         <div 
           onClick={() => setActiveTab('book')}
           className="flex items-center gap-3 cursor-pointer group"
         >
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-400 to-amber-600 p-0.5 shadow-lg shadow-amber-500/20 group-hover:scale-105 transition-transform flex items-center justify-center">
-            <div className="w-full h-full bg-stone-950 rounded-[10px] flex items-center justify-center">
-              <Scissors className="w-5 h-5 text-amber-400 -rotate-45" />
-            </div>
+          <div className="relative w-12 h-12 rounded-2xl overflow-hidden bg-[#1C1F26] border-2 border-[#FACC15]/40 group-hover:border-[#FACC15] transition-all flex items-center justify-center shadow-lg shrink-0 group-hover:scale-105">
+            <img 
+              src={shopInfo.logoUrl || '/logo.jpg'} 
+              alt={shopInfo.name || 'Big Bang Barber'} 
+              className="w-full h-full object-cover object-center"
+              onError={(e) => {
+                // Fallback to stylized text if image fails to load
+                (e.target as HTMLElement).style.display = 'none';
+              }}
+            />
+            <span className="font-black text-xl text-[#FACC15] absolute">
+              BB
+            </span>
           </div>
           <div>
-            <div className="flex items-center gap-1.5">
-              <h1 className="text-lg font-extrabold tracking-wider text-amber-400 font-heading">
-                BIGBANG<span className="text-stone-100">BARBER</span>
-              </h1>
-              <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/30">
-                PRO
-              </span>
-            </div>
-            <p className="text-[11px] text-stone-400 flex items-center gap-1">
-              <span>จองคิวออนไลน์ 3 ช่างระดับโปร</span>
+            <h1 className="text-2xl font-black tracking-tighter leading-[0.9] uppercase italic font-heading">
+              {shopInfo.name || 'Big Bang'}<span className="text-[#FACC15] ml-1.5">Barber</span>
+            </h1>
+            <p className="mt-1 text-gray-400 font-bold tracking-widest text-[9px] uppercase truncate max-w-[200px]">
+              {shopInfo.tagline || 'Premium Grooming & Style Studio'}
             </p>
           </div>
         </div>
 
         <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={onOpenSettings}
+            className="w-10 h-10 rounded-xl bg-[#1C1F26] border border-white/10 text-gray-300 hover:text-[#FACC15] hover:border-[#FACC15] flex items-center justify-center transition-all cursor-pointer active:scale-95 group relative"
+            title="ตั้งค่าระบบร้าน (Settings)"
+          >
+            <Settings className="w-4 h-4 group-hover:rotate-45 transition-transform duration-300" />
+            <span className="sr-only">ตั้งค่า</span>
+          </button>
+
           <a
-            href={`tel:${SHOP_INFO.phone}`}
-            className="w-9 h-9 rounded-xl bg-stone-900 border border-stone-800 text-stone-300 hover:text-amber-400 hover:border-amber-500/50 flex items-center justify-center transition-colors"
+            href={`tel:${shopInfo.phone}`}
+            className="w-10 h-10 rounded-xl bg-[#1C1F26] border border-white/10 text-gray-300 hover:text-[#FACC15] hover:border-[#FACC15] flex items-center justify-center transition-all cursor-pointer active:scale-95"
             title="โทรสอบถามร้าน"
           >
             <Phone className="w-4 h-4" />
@@ -70,14 +122,14 @@ export const Header: React.FC<HeaderProps> = ({
       </div>
 
       {/* Navigation Segment Tabs */}
-      <div className="max-w-md mx-auto px-3 pb-2.5">
-        <div className="grid grid-cols-3 gap-1 bg-stone-900/90 p-1 rounded-xl border border-stone-800 text-xs">
+      <div className="max-w-md mx-auto px-3 pb-3">
+        <div className="grid grid-cols-3 gap-1.5 bg-[#121418] p-1.5 rounded-2xl border border-white/10 text-xs">
           <button
             onClick={() => setActiveTab('book')}
-            className={`py-2 px-1 rounded-lg font-medium transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+            className={`py-2 px-1 rounded-xl font-bold uppercase text-[11px] tracking-wider transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
               activeTab === 'book'
-                ? 'bg-amber-500 text-stone-950 font-bold shadow-md shadow-amber-500/20'
-                : 'text-stone-400 hover:text-stone-200 hover:bg-stone-800/60'
+                ? 'bg-[#FACC15] text-black shadow-lg font-black'
+                : 'text-gray-400 hover:text-white hover:bg-[#1C1F26]'
             }`}
           >
             <Scissors className="w-3.5 h-3.5" />
@@ -86,29 +138,29 @@ export const Header: React.FC<HeaderProps> = ({
 
           <button
             onClick={() => setActiveTab('my-bookings')}
-            className={`py-2 px-1 rounded-lg font-medium transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+            className={`py-2 px-1 rounded-xl font-bold uppercase text-[11px] tracking-wider transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
               activeTab === 'my-bookings'
-                ? 'bg-amber-500 text-stone-950 font-bold shadow-md shadow-amber-500/20'
-                : 'text-stone-400 hover:text-stone-200 hover:bg-stone-800/60'
+                ? 'bg-[#FACC15] text-black shadow-lg font-black'
+                : 'text-gray-400 hover:text-white hover:bg-[#1C1F26]'
             }`}
           >
             <Calendar className="w-3.5 h-3.5" />
-            <span>เช็คคิวของฉัน</span>
+            <span>เช็คคิว</span>
           </button>
 
           <button
             onClick={() => setActiveTab('queue-board')}
-            className={`py-2 px-1 rounded-lg font-medium transition-all flex items-center justify-center gap-1.5 cursor-pointer relative ${
+            className={`py-2 px-1 rounded-xl font-bold uppercase text-[11px] tracking-wider transition-all flex items-center justify-center gap-1.5 cursor-pointer relative ${
               activeTab === 'queue-board'
-                ? 'bg-amber-500 text-stone-950 font-bold shadow-md shadow-amber-500/20'
-                : 'text-stone-400 hover:text-stone-200 hover:bg-stone-800/60'
+                ? 'bg-[#FACC15] text-black shadow-lg font-black'
+                : 'text-gray-400 hover:text-white hover:bg-[#1C1F26]'
             }`}
           >
             <Users className="w-3.5 h-3.5" />
-            <span>คิวช่าง 3 คน</span>
+            <span>คิวช่าง</span>
             {totalActiveBookingsToday > 0 && (
-              <span className={`px-1.5 py-0.2 rounded-full text-[9px] font-bold ${
-                activeTab === 'queue-board' ? 'bg-stone-950 text-amber-400' : 'bg-amber-500 text-stone-950'
+              <span className={`px-1.5 py-0.2 rounded-full text-[9px] font-black ${
+                activeTab === 'queue-board' ? 'bg-black text-[#FACC15]' : 'bg-[#FACC15] text-black'
               }`}>
                 {totalActiveBookingsToday}
               </span>

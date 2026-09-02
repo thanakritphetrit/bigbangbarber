@@ -46,31 +46,31 @@ export const MyBookingsView: React.FC<MyBookingsViewProps> = ({
     switch (status) {
       case 'confirmed':
         return (
-          <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 flex items-center gap-1">
-            <CheckCircle2 className="w-3 h-3" /> ยืนยันแล้ว
+          <span className="px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wider bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 flex items-center gap-1">
+            <CheckCircle2 className="w-3 h-3" /> CONFIRMED
           </span>
         );
       case 'in_progress':
         return (
-          <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-500/20 text-amber-400 border border-amber-500/30 flex items-center gap-1">
-            <Scissors className="w-3 h-3 animate-spin" /> กำลังตัดผม
+          <span className="px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wider bg-[#FACC15] text-black flex items-center gap-1">
+            <Scissors className="w-3 h-3 animate-spin" /> IN PROGRESS
           </span>
         );
       case 'completed':
         return (
-          <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-blue-500/10 text-blue-400 border border-blue-500/30">
-            เสร็จสิ้น
+          <span className="px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wider bg-blue-500/20 text-blue-400 border border-blue-500/40">
+            COMPLETED
           </span>
         );
       case 'cancelled':
         return (
-          <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-rose-500/10 text-rose-400 border border-rose-500/30 flex items-center gap-1">
-            <XCircle className="w-3 h-3" /> ยกเลิกแล้ว
+          <span className="px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wider bg-rose-500/20 text-rose-400 border border-rose-500/40 flex items-center gap-1">
+            <XCircle className="w-3 h-3" /> CANCELLED
           </span>
         );
       default:
         return (
-          <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-stone-800 text-stone-300">
+          <span className="px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wider bg-[#1C1F26] text-gray-300">
             {status}
           </span>
         );
@@ -80,21 +80,21 @@ export const MyBookingsView: React.FC<MyBookingsViewProps> = ({
   return (
     <div className="space-y-4 pb-12">
       {/* Title */}
-      <div className="bg-stone-900/60 p-4 rounded-2xl border border-stone-800">
+      <div className="bg-[#1C1F26] p-5 rounded-3xl border border-white/10 shadow-xl">
         <div className="flex items-center gap-2 mb-1">
-          <Ticket className="w-5 h-5 text-amber-400" />
-          <h2 className="text-base font-bold text-stone-100 font-heading">
-            ตรวจสอบคิวและประวัติการจอง (My Bookings)
+          <Ticket className="w-5 h-5 text-[#FACC15]" />
+          <h2 className="text-lg font-black uppercase tracking-tight text-white font-heading">
+            MY BOOKINGS & QUEUE PASS
           </h2>
         </div>
-        <p className="text-xs text-stone-400">
-          กรอกเบอร์โทรศัพท์ที่ใช้ตอนจอง เพื่อดูตั๋วคิว สถานะคิวสด หรือแก้ไขนัดหมาย
+        <p className="text-xs text-gray-400 font-medium">
+          กรอกเบอร์โทรศัพท์เพื่อตรวจสอบตั๋วคิว สถานะคิวสด หรือดูรายละเอียดนัดหมาย
         </p>
 
         {/* Search Form */}
-        <form onSubmit={handleSearch} className="mt-3.5 flex gap-2">
+        <form onSubmit={handleSearch} className="mt-4 flex gap-2">
           <div className="relative flex-1">
-            <Phone className="w-4 h-4 text-stone-500 absolute left-3.5 top-3" />
+            <Phone className="w-4 h-4 text-gray-500 absolute left-3.5 top-3.5" />
             <input
               type="tel"
               value={searchPhone}
@@ -103,15 +103,15 @@ export const MyBookingsView: React.FC<MyBookingsViewProps> = ({
                 if (!hasSearched) setHasSearched(true);
               }}
               placeholder="กรอกเบอร์โทร เช่น 0812345678"
-              className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-stone-950 border border-stone-800 text-stone-100 placeholder-stone-600 text-sm focus:outline-none focus:border-amber-500 font-mono"
+              className="w-full pl-10 pr-4 py-3 rounded-xl bg-[#0A0A0B] border border-white/10 text-white placeholder-gray-600 text-sm focus:outline-none focus:border-[#FACC15] focus:ring-1 focus:ring-[#FACC15] font-mono font-bold"
             />
           </div>
           <button
             type="submit"
-            className="px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-stone-950 font-bold text-xs flex items-center gap-1.5 transition-colors cursor-pointer shrink-0"
+            className="px-5 py-3 rounded-xl bg-[#FACC15] hover:bg-yellow-400 text-black font-black text-xs uppercase tracking-wider flex items-center gap-1.5 transition-all cursor-pointer shrink-0 active:scale-95"
           >
-            <Search className="w-4 h-4" />
-            <span>ค้นหา</span>
+            <Search className="w-4 h-4 stroke-[3]" />
+            <span>FIND</span>
           </button>
         </form>
       </div>
@@ -119,82 +119,84 @@ export const MyBookingsView: React.FC<MyBookingsViewProps> = ({
       {/* Results */}
       {cleanSearch && (
         <div className="space-y-3">
-          <div className="flex items-center justify-between text-xs text-stone-400 px-1">
-            <span>ผลการค้นหาสำหรับ: <strong className="text-stone-200">{formatPhoneNumber(cleanSearch)}</strong></span>
-            <span>พบ {filteredBookings.length} รายการ</span>
+          <div className="flex items-center justify-between text-xs text-gray-400 px-1 font-bold uppercase tracking-wider">
+            <span>PHONE: <strong className="text-white font-mono">{formatPhoneNumber(cleanSearch)}</strong></span>
+            <span className="text-[#FACC15]">FOUND {filteredBookings.length} TICKETS</span>
           </div>
 
           {filteredBookings.length === 0 ? (
-            <div className="p-8 text-center bg-stone-900/40 rounded-2xl border border-stone-800 space-y-2">
-              <AlertCircle className="w-8 h-8 text-stone-600 mx-auto" />
-              <h4 className="text-sm font-bold text-stone-300">ไม่พบคิวการจองด้วยเบอร์นี้</h4>
-              <p className="text-xs text-stone-500 max-w-xs mx-auto">
-                โปรดตรวจสอบหมายเลขโทรศัพท์อีกครั้ง หรือกดปุ่มด้านล่างเพื่อทำการจองคิวใหม่
+            <div className="p-8 text-center bg-[#1C1F26] rounded-3xl border border-white/10 space-y-3">
+              <AlertCircle className="w-10 h-10 text-gray-600 mx-auto" />
+              <h4 className="text-base font-black uppercase text-white font-heading">
+                NO BOOKINGS FOUND
+              </h4>
+              <p className="text-xs text-gray-400 max-w-xs mx-auto">
+                ไม่พบคิวที่ตรงกับเบอร์โทรศัพท์นี้ กรุณาตรวจสอบเบอร์อีกครั้ง หรือกดจองคิวใหม่
               </p>
               <button
                 type="button"
                 onClick={onGoToBooking}
-                className="mt-2 inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-amber-500 text-stone-950 font-bold text-xs shadow-md cursor-pointer"
+                className="mt-2 inline-flex items-center gap-2 px-5 py-3 rounded-2xl bg-[#FACC15] text-black font-black text-xs uppercase tracking-wider shadow-lg cursor-pointer hover:bg-yellow-400 active:scale-95"
               >
-                <Scissors className="w-3.5 h-3.5" />
-                <span>จองคิวตัดผมใหม่</span>
+                <Scissors className="w-4 h-4 stroke-[3]" />
+                <span>BOOK NEW QUEUE</span>
               </button>
             </div>
           ) : (
-            <div className="space-y-2.5">
+            <div className="space-y-3">
               {filteredBookings.map((b) => (
                 <div
                   key={b.id || b.bookingCode}
                   onClick={() => onSelectBookingForTicket(b)}
-                  className="p-4 rounded-2xl bg-stone-900/80 border border-stone-800 hover:border-amber-500/60 transition-all cursor-pointer space-y-3 group shadow-md"
+                  className="p-5 rounded-3xl bg-[#1C1F26] border border-white/10 hover:border-[#FACC15] transition-all cursor-pointer space-y-3.5 group shadow-xl"
                 >
                   {/* Top Bar: Code & Status */}
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <span className="font-mono font-bold text-amber-400 text-sm">
+                      <span className="font-mono font-black text-[#FACC15] text-base">
                         {b.bookingCode}
                       </span>
-                      <span className="text-[11px] text-stone-500">• {b.customerName}</span>
+                      <span className="text-xs font-bold text-gray-400 uppercase">• {b.customerName}</span>
                     </div>
                     <div>{getStatusBadge(b.status)}</div>
                   </div>
 
                   {/* Main Details */}
-                  <div className="grid grid-cols-2 gap-2 text-xs bg-stone-950/50 p-2.5 rounded-xl border border-stone-800/80">
+                  <div className="grid grid-cols-2 gap-2 text-xs bg-[#0A0A0B] p-3.5 rounded-2xl border border-white/5">
                     <div className="flex items-center gap-2">
-                      <Scissors className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                      <Scissors className="w-4 h-4 text-[#FACC15] shrink-0" />
                       <div className="truncate">
-                        <span className="text-[10px] text-stone-500 block">ช่างตัดผม</span>
-                        <span className="text-stone-200 font-medium truncate block">{b.barberName}</span>
+                        <span className="text-[10px] text-gray-500 uppercase font-bold block">BARBER</span>
+                        <span className="text-white font-bold truncate block">{b.barberName}</span>
                       </div>
                     </div>
 
                     <div className="flex items-center gap-2">
-                      <Calendar className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                      <Calendar className="w-4 h-4 text-[#FACC15] shrink-0" />
                       <div>
-                        <span className="text-[10px] text-stone-500 block">วันนัดหมาย</span>
-                        <span className="text-stone-200 font-medium">{formatThaiDate(b.date, 'short')}</span>
+                        <span className="text-[10px] text-gray-500 uppercase font-bold block">DATE</span>
+                        <span className="text-white font-bold">{formatThaiDate(b.date, 'short')}</span>
                       </div>
                     </div>
 
                     <div className="flex items-center gap-2">
-                      <Clock className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                      <Clock className="w-4 h-4 text-[#FACC15] shrink-0" />
                       <div>
-                        <span className="text-[10px] text-stone-500 block">เวลา</span>
-                        <span className="text-amber-400 font-bold">{b.timeSlot} น.</span>
+                        <span className="text-[10px] text-gray-500 uppercase font-bold block">TIME</span>
+                        <span className="text-[#FACC15] font-black">{b.timeSlot} น.</span>
                       </div>
                     </div>
 
                     <div className="flex items-center gap-2">
-                      <span className="text-[10px] text-stone-500 block">ยอดชำระ</span>
-                      <span className="text-stone-100 font-bold font-heading">฿{b.servicePrice.toLocaleString()}</span>
+                      <span className="text-[10px] text-gray-500 uppercase font-bold block">PRICE</span>
+                      <span className="text-white font-black font-heading text-sm">฿{b.servicePrice.toLocaleString()}</span>
                     </div>
                   </div>
 
                   {/* Bottom View Ticket CTA */}
-                  <div className="flex items-center justify-between text-xs text-amber-400 group-hover:text-amber-300 pt-1">
-                    <span className="font-medium text-[11px] flex items-center gap-1">
-                      <Ticket className="w-3.5 h-3.5" /> แตะเพื่อดู E-Ticket & บัตรคิว
+                  <div className="flex items-center justify-between text-xs text-[#FACC15] group-hover:text-yellow-400 pt-1 font-bold uppercase tracking-wider">
+                    <span className="flex items-center gap-1.5">
+                      <Ticket className="w-4 h-4" /> VIEW PASS & TICKET
                     </span>
                     <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                   </div>
@@ -205,12 +207,14 @@ export const MyBookingsView: React.FC<MyBookingsViewProps> = ({
         </div>
       )}
 
-      {/* If haven't searched yet, show recent bookings hint */}
+      {/* If haven't searched yet, show hint */}
       {!cleanSearch && (
-        <div className="p-6 text-center bg-stone-900/30 rounded-2xl border border-stone-800/60 space-y-2">
-          <Search className="w-6 h-6 text-stone-600 mx-auto" />
-          <p className="text-xs text-stone-400">กรอกเบอร์โทรศัพท์เพื่อค้นหาคิวของคุณ</p>
-          <p className="text-[11px] text-stone-600">
+        <div className="p-8 text-center bg-[#1C1F26]/60 rounded-3xl border border-white/5 space-y-2">
+          <Search className="w-8 h-8 text-gray-600 mx-auto" />
+          <p className="text-xs font-bold uppercase text-gray-400 tracking-wider">
+            SEARCH BY PHONE NUMBER
+          </p>
+          <p className="text-[11px] text-gray-500">
             ระบบจะดึงข้อมูลการจองแบบเรียลไทม์จากฐานข้อมูล Firestore
           </p>
         </div>

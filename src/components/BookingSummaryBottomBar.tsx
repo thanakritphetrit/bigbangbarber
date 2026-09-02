@@ -1,6 +1,5 @@
 import React from 'react';
-import { Scissors, ArrowRight, Clock, Calendar, CheckCircle2 } from 'lucide-react';
-import { formatThaiDate } from '../utils/dateHelpers';
+import { ArrowRight } from 'lucide-react';
 
 interface BookingSummaryBottomBarProps {
   barberName: string;
@@ -26,20 +25,20 @@ export const BookingSummaryBottomBar: React.FC<BookingSummaryBottomBarProps> = (
   isSubmitting
 }) => {
   return (
-    <div className="sticky bottom-0 z-40 bg-stone-950/95 backdrop-blur-lg border-t border-stone-800 p-4 shadow-[0_-10px_25px_-5px_rgba(0,0,0,0.5)]">
-      <div className="max-w-md mx-auto flex items-center justify-between gap-3">
+    <div className="sticky bottom-0 z-40 bg-[#0A0A0B]/95 backdrop-blur-md border-t border-white/10 p-4 shadow-[0_-15px_30px_rgba(0,0,0,0.8)]">
+      <div className="max-w-md mx-auto flex items-center justify-between gap-3.5">
         {/* Left summary info */}
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-1.5 text-xs text-stone-400">
-            <span className="truncate">{barberName || 'ยังไม่เลือกช่าง'}</span>
+          <div className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-gray-400">
+            <span className="truncate">{barberName || 'เลือกช่าง'}</span>
             <span>•</span>
-            <span className="truncate">{timeSlot || '--:--'}</span>
+            <span className="truncate text-white">{timeSlot || '--:--'}</span>
           </div>
-          <div className="flex items-baseline gap-1.5 mt-0.5">
-            <span className="text-xl font-extrabold text-amber-400 font-heading">
+          <div className="flex items-baseline gap-2 mt-0.5">
+            <span className="text-2xl font-black text-[#FACC15] font-heading">
               ฿{servicePrice.toLocaleString()}
             </span>
-            <span className="text-[11px] text-stone-400 truncate max-w-[120px]">
+            <span className="text-xs font-bold uppercase text-gray-400 truncate max-w-[130px]">
               {serviceName}
             </span>
           </div>
@@ -51,21 +50,21 @@ export const BookingSummaryBottomBar: React.FC<BookingSummaryBottomBarProps> = (
             type="button"
             disabled={!isValid || isSubmitting}
             onClick={onProceed}
-            className={`py-3 px-5 rounded-xl font-bold text-sm flex items-center gap-2 transition-all cursor-pointer shadow-lg ${
+            className={`py-3.5 px-6 rounded-2xl font-black text-sm uppercase tracking-wider flex items-center gap-2 transition-all cursor-pointer shadow-2xl ${
               isValid && !isSubmitting
-                ? 'bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-stone-950 shadow-amber-500/25 active:scale-98'
-                : 'bg-stone-800 text-stone-500 cursor-not-allowed border border-stone-700'
+                ? 'bg-[#FACC15] hover:bg-yellow-400 text-black active:scale-95 shadow-[#FACC15]/20'
+                : 'bg-white/10 text-gray-500 cursor-not-allowed border border-white/5'
             }`}
           >
             {isSubmitting ? (
               <>
-                <div className="w-4 h-4 border-2 border-stone-950 border-t-transparent rounded-full animate-spin" />
-                <span>กำลังบันทึก...</span>
+                <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
+                <span>SAVING...</span>
               </>
             ) : (
               <>
-                <span>จองคิวทันที</span>
-                <ArrowRight className="w-4 h-4" />
+                <span>CONFIRM QUEUE</span>
+                <ArrowRight className="w-4 h-4 stroke-[3]" />
               </>
             )}
           </button>
@@ -74,7 +73,7 @@ export const BookingSummaryBottomBar: React.FC<BookingSummaryBottomBarProps> = (
 
       {/* Warning message if form is incomplete */}
       {!isValid && missingFieldMessage && (
-        <p className="text-center text-[11px] text-amber-400/90 mt-2 flex items-center justify-center gap-1">
+        <p className="text-center text-[10px] font-bold uppercase tracking-wider text-[#FACC15] mt-2 flex items-center justify-center gap-1">
           <span>* {missingFieldMessage}</span>
         </p>
       )}

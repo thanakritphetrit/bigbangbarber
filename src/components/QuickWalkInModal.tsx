@@ -69,55 +69,55 @@ export const QuickWalkInModal: React.FC<QuickWalkInModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-950/80 backdrop-blur-sm animate-in fade-in">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-in fade-in">
       <div 
-        className="relative w-full max-w-md bg-stone-900 border border-stone-800 rounded-3xl overflow-hidden shadow-2xl flex flex-col"
+        className="relative w-full max-w-md bg-[#1C1F26] border border-white/10 rounded-3xl overflow-hidden shadow-2xl flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="bg-amber-500 px-5 py-3.5 text-stone-950 flex items-center justify-between">
+        <div className="bg-[#FACC15] px-6 py-4 text-black flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Plus className="w-5 h-5 font-black" />
-            <h3 className="font-extrabold text-sm font-heading">เพิ่มคิว Walk-in หน้าร้าน</h3>
+            <Plus className="w-5 h-5 stroke-[3]" />
+            <h3 className="font-black text-base uppercase tracking-tight font-heading">ADD WALK-IN QUEUE</h3>
           </div>
           <button
             onClick={onClose}
-            className="w-7 h-7 rounded-full bg-stone-950/20 hover:bg-stone-950/40 text-stone-950 flex items-center justify-center cursor-pointer transition-colors"
+            className="w-8 h-8 rounded-full bg-black/10 hover:bg-black/20 text-black flex items-center justify-center cursor-pointer transition-all active:scale-95"
           >
-            <X className="w-4 h-4" />
+            <X className="w-5 h-5 stroke-[2.5]" />
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-5 space-y-3.5 text-xs">
+        <form onSubmit={handleSubmit} className="p-6 space-y-3.5 text-xs">
           {/* Customer Name */}
           <div className="space-y-1">
-            <label className="text-stone-300 font-medium">ชื่อลูกค้า</label>
+            <label className="text-gray-400 font-bold uppercase tracking-wider block">CUSTOMER NAME</label>
             <input
               type="text"
               required
               value={customerName}
               onChange={(e) => setCustomerName(e.target.value)}
-              className="w-full px-3 py-2 rounded-xl bg-stone-950 border border-stone-800 text-stone-100 text-xs focus:border-amber-500"
+              className="w-full px-3.5 py-2.5 rounded-xl bg-[#0A0A0B] border border-white/10 text-white text-xs font-bold focus:border-[#FACC15] focus:outline-none"
             />
           </div>
 
           {/* Customer Phone */}
           <div className="space-y-1">
-            <label className="text-stone-300 font-medium">เบอร์โทรศัพท์</label>
+            <label className="text-gray-400 font-bold uppercase tracking-wider block">PHONE NUMBER</label>
             <input
               type="tel"
               value={customerPhone}
               onChange={(e) => setCustomerPhone(e.target.value)}
-              className="w-full px-3 py-2 rounded-xl bg-stone-950 border border-stone-800 text-stone-100 text-xs font-mono focus:border-amber-500"
+              className="w-full px-3.5 py-2.5 rounded-xl bg-[#0A0A0B] border border-white/10 text-white text-xs font-mono font-bold focus:border-[#FACC15] focus:outline-none"
             />
           </div>
 
           {/* Barber Selection */}
           <div className="space-y-1">
-            <label className="text-stone-300 font-medium">เลือกช่าง (3 คน)</label>
+            <label className="text-gray-400 font-bold uppercase tracking-wider block">SELECT BARBER</label>
             <select
               value={barberId}
               onChange={(e) => setBarberId(e.target.value)}
-              className="w-full px-3 py-2 rounded-xl bg-stone-950 border border-stone-800 text-stone-100 text-xs focus:border-amber-500"
+              className="w-full px-3.5 py-2.5 rounded-xl bg-[#0A0A0B] border border-white/10 text-white text-xs font-bold focus:border-[#FACC15] focus:outline-none"
             >
               {barbers.map((b) => (
                 <option key={b.id} value={b.id}>
@@ -129,11 +129,11 @@ export const QuickWalkInModal: React.FC<QuickWalkInModalProps> = ({
 
           {/* Service */}
           <div className="space-y-1">
-            <label className="text-stone-300 font-medium">เลือกบริการ</label>
+            <label className="text-gray-400 font-bold uppercase tracking-wider block">SELECT SERVICE</label>
             <select
               value={serviceId}
               onChange={(e) => setServiceId(e.target.value)}
-              className="w-full px-3 py-2 rounded-xl bg-stone-950 border border-stone-800 text-stone-100 text-xs focus:border-amber-500"
+              className="w-full px-3.5 py-2.5 rounded-xl bg-[#0A0A0B] border border-white/10 text-white text-xs font-bold focus:border-[#FACC15] focus:outline-none"
             >
               {services.map((s) => (
                 <option key={s.id} value={s.id}>
@@ -146,21 +146,21 @@ export const QuickWalkInModal: React.FC<QuickWalkInModalProps> = ({
           {/* Time slot & Date */}
           <div className="grid grid-cols-2 gap-2">
             <div className="space-y-1">
-              <label className="text-stone-300 font-medium">วันที่</label>
+              <label className="text-gray-400 font-bold uppercase tracking-wider block">DATE</label>
               <input
                 type="date"
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl bg-stone-950 border border-stone-800 text-stone-100 text-xs"
+                className="w-full px-3.5 py-2.5 rounded-xl bg-[#0A0A0B] border border-white/10 text-white text-xs font-bold focus:border-[#FACC15] focus:outline-none"
               />
             </div>
 
             <div className="space-y-1">
-              <label className="text-stone-300 font-medium">เวลา</label>
+              <label className="text-gray-400 font-bold uppercase tracking-wider block">TIME SLOT</label>
               <select
                 value={timeSlot}
                 onChange={(e) => setTimeSlot(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl bg-stone-950 border border-stone-800 text-stone-100 text-xs focus:border-amber-500"
+                className="w-full px-3.5 py-2.5 rounded-xl bg-[#0A0A0B] border border-white/10 text-white text-xs font-bold focus:border-[#FACC15] focus:outline-none"
               >
                 {TIME_SLOTS.map((t) => (
                   <option key={t} value={t}>
@@ -173,23 +173,24 @@ export const QuickWalkInModal: React.FC<QuickWalkInModalProps> = ({
 
           {/* Note */}
           <div className="space-y-1">
-            <label className="text-stone-300 font-medium">หมายเหตุ</label>
+            <label className="text-gray-400 font-bold uppercase tracking-wider block">NOTE</label>
             <input
               type="text"
               value={customerNote}
               onChange={(e) => setCustomerNote(e.target.value)}
-              className="w-full px-3 py-2 rounded-xl bg-stone-950 border border-stone-800 text-stone-100 text-xs"
+              className="w-full px-3.5 py-2.5 rounded-xl bg-[#0A0A0B] border border-white/10 text-white text-xs font-medium focus:border-[#FACC15] focus:outline-none"
             />
           </div>
 
           {/* Submit */}
-          <div className="pt-2">
+          <div className="pt-3">
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-stone-950 font-bold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-md"
+              className="w-full py-3.5 rounded-2xl bg-[#FACC15] hover:bg-yellow-400 text-black font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all cursor-pointer shadow-lg active:scale-98 disabled:opacity-50"
             >
-              {isSubmitting ? 'กำลังบันทึก...' : 'บันทึกคิว Walk-in ทันที'}
+              <Plus className="w-4 h-4 stroke-[3]" />
+              <span>{isSubmitting ? 'SAVING WALK-IN...' : 'START WALK-IN CUT NOW'}</span>
             </button>
           </div>
         </form>

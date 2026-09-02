@@ -3,30 +3,34 @@
 @layer base {
   body {
     font-family: 'Kanit', 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    background-color: #0A0A0B;
+    color: #FFFFFF;
   }
   
-  h1, h2, h3, h4, .font-heading {
+  h1, h2, h3, h4, h5, h6, .font-heading {
     font-family: 'Outfit', 'Kanit', sans-serif;
+    letter-spacing: -0.03em;
   }
 }
 
 /* Custom scrollbar */
 ::-webkit-scrollbar {
-  width: 5px;
-  height: 5px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #1c1917;
+  background: #0A0A0B;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #44403c;
+  background: #1C1F26;
   border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #78716c;
+  background: #FACC15;
 }
 
 /* Hide scrollbar for clean mobile tabs */
@@ -37,4 +41,5 @@
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
 

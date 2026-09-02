@@ -63,16 +63,16 @@ export const QueueBoardView: React.FC<QueueBoardViewProps> = ({
   return (
     <div className="space-y-4 pb-12">
       {/* Top Banner with Quick Action */}
-      <div className="bg-gradient-to-r from-stone-900 via-stone-850 to-stone-900 p-4 rounded-2xl border border-stone-800 space-y-3">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Users className="w-5 h-5 text-amber-400" />
+      <div className="bg-[#1C1F26] p-5 rounded-3xl border border-white/10 shadow-xl space-y-4">
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2.5">
+            <Users className="w-6 h-6 text-[#FACC15]" />
             <div>
-              <h2 className="text-base font-bold text-stone-100 font-heading">
-                บอร์ดคิวช่าง 3 คน (Live Queue Board)
+              <h2 className="text-lg font-black uppercase tracking-tight text-white font-heading">
+                LIVE QUEUE BOARD ({barbers.length} BARBERS)
               </h2>
-              <p className="text-[11px] text-stone-400">
-                จัดการสถานะคิว อัปเดตงานตัดผม และตรวจดูความว่าง
+              <p className="text-xs text-gray-400 font-medium">
+                จัดการสถานะคิว อัปเดตงานตัดผม และตรวจดูคิวสด
               </p>
             </div>
           </div>
@@ -80,36 +80,36 @@ export const QueueBoardView: React.FC<QueueBoardViewProps> = ({
           <button
             type="button"
             onClick={onOpenQuickWalkIn}
-            className="px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-stone-950 font-bold text-xs flex items-center gap-1.5 shadow-md transition-colors cursor-pointer shrink-0"
+            className="px-4 py-2.5 rounded-2xl bg-[#FACC15] hover:bg-yellow-400 text-black font-black text-xs uppercase tracking-wider flex items-center gap-1.5 shadow-lg transition-all cursor-pointer shrink-0 active:scale-95"
           >
-            <PlusCircle className="w-4 h-4" />
-            <span>+ เพิ่มคิว Walk-in</span>
+            <PlusCircle className="w-4 h-4 stroke-[3]" />
+            <span>+ WALK-IN</span>
           </button>
         </div>
 
         {/* Today Summary Metrics */}
         <div className="grid grid-cols-4 gap-2 text-center pt-1">
-          <div className="bg-stone-950/70 p-2 rounded-xl border border-stone-800">
-            <span className="text-[10px] text-stone-400 block">คิววันนี้</span>
-            <span className="text-base font-extrabold text-stone-100 font-heading">
+          <div className="bg-[#0A0A0B] p-3 rounded-2xl border border-white/5">
+            <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider block">TODAY</span>
+            <span className="text-xl font-black text-white font-heading">
               {todayBookings.length}
             </span>
           </div>
-          <div className="bg-stone-950/70 p-2 rounded-xl border border-stone-800">
-            <span className="text-[10px] text-amber-400 block">กำลังตัด</span>
-            <span className="text-base font-extrabold text-amber-400 font-heading">
+          <div className="bg-[#0A0A0B] p-3 rounded-2xl border border-white/5">
+            <span className="text-[10px] text-[#FACC15] font-bold uppercase tracking-wider block">CUTTING</span>
+            <span className="text-xl font-black text-[#FACC15] font-heading">
               {inProgressCount}
             </span>
           </div>
-          <div className="bg-stone-950/70 p-2 rounded-xl border border-stone-800">
-            <span className="text-[10px] text-emerald-400 block">เสร็จแล้ว</span>
-            <span className="text-base font-extrabold text-emerald-400 font-heading">
+          <div className="bg-[#0A0A0B] p-3 rounded-2xl border border-white/5">
+            <span className="text-[10px] text-emerald-400 font-bold uppercase tracking-wider block">DONE</span>
+            <span className="text-xl font-black text-emerald-400 font-heading">
               {completedCount}
             </span>
           </div>
-          <div className="bg-stone-950/70 p-2 rounded-xl border border-stone-800">
-            <span className="text-[10px] text-stone-400 block">ยอดรวม</span>
-            <span className="text-xs font-bold text-amber-300 font-heading mt-1 block">
+          <div className="bg-[#0A0A0B] p-3 rounded-2xl border border-white/5">
+            <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider block">REVENUE</span>
+            <span className="text-xs font-black text-[#FACC15] font-heading mt-1 block">
               ฿{todayTotalRevenue.toLocaleString()}
             </span>
           </div>
@@ -117,19 +117,19 @@ export const QueueBoardView: React.FC<QueueBoardViewProps> = ({
       </div>
 
       {/* Filter Tabs: Date & Barber */}
-      <div className="space-y-2">
+      <div className="space-y-2.5">
         {/* Barber selection pills */}
-        <div className="flex gap-1.5 overflow-x-auto no-scrollbar pb-1">
+        <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
           <button
             type="button"
             onClick={() => setSelectedBarberFilter('all')}
-            className={`px-3 py-1.5 rounded-xl text-xs font-medium shrink-0 transition-all cursor-pointer border ${
+            className={`px-4 py-2 rounded-2xl text-xs font-black uppercase tracking-wider shrink-0 transition-all cursor-pointer border ${
               selectedBarberFilter === 'all'
-                ? 'bg-amber-500 text-stone-950 font-bold border-amber-500 shadow-sm'
-                : 'bg-stone-900 text-stone-300 border-stone-800 hover:border-stone-700'
+                ? 'bg-white text-black border-white shadow-md'
+                : 'bg-[#1C1F26] text-gray-300 border-white/5 hover:border-white/20'
             }`}
           >
-            รวมช่างทั้งหมด (3 คน)
+            ALL BARBERS (3)
           </button>
 
           {barbers.map((barber) => (
@@ -137,17 +137,20 @@ export const QueueBoardView: React.FC<QueueBoardViewProps> = ({
               key={barber.id}
               type="button"
               onClick={() => setSelectedBarberFilter(barber.id)}
-              className={`px-3 py-1.5 rounded-xl text-xs font-medium shrink-0 transition-all cursor-pointer border flex items-center gap-1.5 ${
+              className={`px-3.5 py-2 rounded-2xl text-xs font-black uppercase tracking-wider shrink-0 transition-all cursor-pointer border flex items-center gap-2 ${
                 selectedBarberFilter === barber.id
-                  ? 'bg-amber-500 text-stone-950 font-bold border-amber-500 shadow-sm'
-                  : 'bg-stone-900 text-stone-300 border-stone-800 hover:border-stone-700'
+                  ? 'bg-white text-black border-white shadow-md'
+                  : 'bg-[#1C1F26] text-gray-300 border-white/5 hover:border-white/20'
               }`}
             >
               <img
-                src={barber.avatar}
+                src={barber.avatar || 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=500&auto=format&fit=crop&q=80'}
                 alt={barber.name}
                 referrerPolicy="no-referrer"
-                className="w-4 h-4 rounded-full object-cover"
+                onError={(e) => {
+                  e.currentTarget.src = 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=500&auto=format&fit=crop&q=80';
+                }}
+                className="w-4 h-4 rounded-full object-cover border border-black/20"
               />
               <span>{barber.nickname.split(' ')[0]}</span>
             </button>
@@ -155,30 +158,30 @@ export const QueueBoardView: React.FC<QueueBoardViewProps> = ({
         </div>
 
         {/* Date Filter selector */}
-        <div className="flex items-center justify-between text-xs px-1 text-stone-400">
-          <span className="flex items-center gap-1">
-            <Calendar className="w-3.5 h-3.5 text-amber-400" />
-            <span>วันที่: <strong>{selectedDateFilter === todayStr ? 'วันนี้ (' + formatThaiDate(todayStr, 'short') + ')' : formatThaiDate(selectedDateFilter, 'short')}</strong></span>
+        <div className="flex items-center justify-between text-xs px-2 text-gray-400 font-bold uppercase tracking-wider">
+          <span className="flex items-center gap-1.5">
+            <Calendar className="w-3.5 h-3.5 text-[#FACC15]" />
+            <span>DATE: <strong className="text-white">{selectedDateFilter === todayStr ? 'TODAY (' + formatThaiDate(todayStr, 'short') + ')' : formatThaiDate(selectedDateFilter, 'short')}</strong></span>
           </span>
 
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1.5">
             <button
               type="button"
               onClick={() => setSelectedDateFilter(todayStr)}
-              className={`px-2 py-0.5 rounded-md text-[11px] font-medium cursor-pointer ${
-                selectedDateFilter === todayStr ? 'bg-amber-500/20 text-amber-400 border border-amber-500/40' : 'text-stone-400 hover:text-stone-200'
+              className={`px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider cursor-pointer ${
+                selectedDateFilter === todayStr ? 'bg-[#FACC15] text-black' : 'text-gray-400 hover:text-white bg-[#1C1F26]'
               }`}
             >
-              วันนี้
+              TODAY
             </button>
             <button
               type="button"
               onClick={() => setSelectedDateFilter('all')}
-              className={`px-2 py-0.5 rounded-md text-[11px] font-medium cursor-pointer ${
-                selectedDateFilter === 'all' ? 'bg-amber-500/20 text-amber-400 border border-amber-500/40' : 'text-stone-400 hover:text-stone-200'
+              className={`px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider cursor-pointer ${
+                selectedDateFilter === 'all' ? 'bg-[#FACC15] text-black' : 'text-gray-400 hover:text-white bg-[#1C1F26]'
               }`}
             >
-              ทั้งหมด
+              ALL
             </button>
           </div>
         </div>
@@ -187,10 +190,10 @@ export const QueueBoardView: React.FC<QueueBoardViewProps> = ({
       {/* Queue List */}
       <div className="space-y-3">
         {sortedBookings.length === 0 ? (
-          <div className="p-8 text-center bg-stone-900/40 rounded-2xl border border-stone-800 space-y-2">
-            <Clock className="w-8 h-8 text-stone-600 mx-auto" />
-            <h4 className="text-sm font-bold text-stone-300">ยังไม่มีคิวในรอบนี้</h4>
-            <p className="text-xs text-stone-500">
+          <div className="p-8 text-center bg-[#1C1F26] rounded-3xl border border-white/10 space-y-2">
+            <Clock className="w-8 h-8 text-gray-600 mx-auto" />
+            <h4 className="text-base font-black uppercase text-white font-heading">NO QUEUES SCHEDULED</h4>
+            <p className="text-xs text-gray-400">
               {selectedBarberFilter !== 'all' 
                 ? 'ช่างท่านนี้ยังไม่มีคิวจองในวันที่เลือก' 
                 : 'ยังไม่มีการจองคิวในวันที่เลือก สามารถคลิกเพิ่มคิว Walk-in ได้ทันที'}
@@ -198,7 +201,6 @@ export const QueueBoardView: React.FC<QueueBoardViewProps> = ({
           </div>
         ) : (
           sortedBookings.map((b) => {
-            const isToday = b.date === todayStr;
             const isInProgress = b.status === 'in_progress';
             const isCompleted = b.status === 'completed';
             const isCancelled = b.status === 'cancelled';
@@ -206,63 +208,63 @@ export const QueueBoardView: React.FC<QueueBoardViewProps> = ({
             return (
               <div
                 key={b.id || b.bookingCode}
-                className={`p-4 rounded-2xl border transition-all space-y-3 shadow-md ${
+                className={`p-5 rounded-3xl border transition-all space-y-3.5 shadow-xl ${
                   isInProgress
-                    ? 'bg-amber-950/30 border-amber-500 ring-1 ring-amber-500/50'
+                    ? 'bg-[#1C1F26] border-4 border-[#FACC15]'
                     : isCompleted
-                    ? 'bg-stone-950/60 border-stone-800/80 opacity-75'
+                    ? 'bg-[#121418] border-white/5 opacity-70'
                     : isCancelled
-                    ? 'bg-stone-950/40 border-stone-900 opacity-50'
-                    : 'bg-stone-900/90 border-stone-800'
+                    ? 'bg-[#0A0A0B] border-white/5 opacity-40'
+                    : 'bg-[#1C1F26] border-white/10'
                 }`}
               >
                 {/* Header: Time, Barber, Code */}
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <span className="px-2.5 py-1 rounded-xl bg-amber-500 text-stone-950 font-extrabold text-sm font-heading shadow-sm">
+                  <div className="flex items-center gap-2.5">
+                    <span className="px-3 py-1 rounded-xl bg-[#FACC15] text-black font-black text-sm font-heading">
                       {b.timeSlot} น.
                     </span>
-                    <span className="text-xs font-bold text-stone-200 font-heading">
+                    <span className="text-sm font-black uppercase text-white font-heading">
                       {b.barberName}
                     </span>
                   </div>
 
                   <div className="flex items-center gap-2">
-                    <span className="font-mono text-xs font-bold text-stone-400">
+                    <span className="font-mono text-xs font-bold text-gray-400">
                       #{b.bookingCode}
                     </span>
                   </div>
                 </div>
 
                 {/* Customer & Service Info */}
-                <div className="bg-stone-950/60 p-3 rounded-xl border border-stone-800/80 space-y-1.5 text-xs">
+                <div className="bg-[#0A0A0B] p-4 rounded-2xl border border-white/5 space-y-2 text-xs">
                   <div className="flex items-center justify-between">
-                    <span className="font-bold text-stone-100 text-sm">{b.customerName}</span>
+                    <span className="font-black text-white text-base">{b.customerName}</span>
                     <a
                       href={`tel:${b.customerPhone}`}
-                      className="text-amber-400 hover:underline flex items-center gap-1 font-mono text-xs"
+                      className="text-[#FACC15] hover:underline flex items-center gap-1 font-mono text-xs font-bold"
                     >
                       <Phone className="w-3 h-3" />
                       <span>{formatPhoneNumber(b.customerPhone)}</span>
                     </a>
                   </div>
 
-                  <div className="flex items-center justify-between text-stone-400">
+                  <div className="flex items-center justify-between text-gray-400 font-medium">
                     <span>{b.serviceName} ({b.durationMinutes} นาที)</span>
-                    <span className="text-amber-400 font-extrabold font-heading text-sm">
+                    <span className="text-[#FACC15] font-black font-heading text-sm">
                       ฿{b.servicePrice.toLocaleString()}
                     </span>
                   </div>
 
                   {b.customerNote && (
-                    <div className="text-[11px] text-stone-300 bg-stone-900 p-1.5 rounded-lg border border-stone-800 mt-1">
-                      <span className="text-stone-500 font-medium">หมายเหตุ: </span>
+                    <div className="text-[11px] text-gray-300 bg-[#121418] p-2 rounded-xl border border-white/5 mt-1 font-medium">
+                      <span className="text-gray-500 uppercase font-bold">NOTE: </span>
                       {b.customerNote}
                     </div>
                   )}
 
-                  <div className="text-[10px] text-stone-500 pt-0.5">
-                    <span>วันที่: {formatThaiDate(b.date, 'full')}</span>
+                  <div className="text-[10px] text-gray-500 uppercase font-bold pt-0.5">
+                    <span>DATE: {formatThaiDate(b.date, 'full')}</span>
                   </div>
                 </div>
 
@@ -271,21 +273,21 @@ export const QueueBoardView: React.FC<QueueBoardViewProps> = ({
                   <button
                     type="button"
                     onClick={() => onSelectBookingForTicket(b)}
-                    className="text-[11px] text-stone-400 hover:text-stone-200 underline cursor-pointer"
+                    className="text-[11px] font-bold uppercase text-gray-400 hover:text-white underline cursor-pointer"
                   >
-                    ดู E-Ticket
+                    E-TICKET
                   </button>
 
-                  <div className="flex items-center gap-1.5">
+                  <div className="flex items-center gap-2">
                     {/* If Confirmed, can Start Cut */}
                     {b.status === 'confirmed' && (
                       <button
                         type="button"
                         onClick={() => b.id && onUpdateStatus(b.id, 'in_progress')}
-                        className="px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-stone-950 font-bold text-xs flex items-center gap-1 shadow-sm cursor-pointer"
+                        className="px-3.5 py-2 rounded-xl bg-[#FACC15] hover:bg-yellow-400 text-black font-black text-xs uppercase tracking-wider flex items-center gap-1 shadow-md cursor-pointer active:scale-95"
                       >
                         <Play className="w-3 h-3 fill-current" />
-                        <span>เริ่มตัดผม</span>
+                        <span>START CUT</span>
                       </button>
                     )}
 
@@ -294,17 +296,17 @@ export const QueueBoardView: React.FC<QueueBoardViewProps> = ({
                       <button
                         type="button"
                         onClick={() => b.id && onUpdateStatus(b.id, 'completed')}
-                        className="px-3 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-stone-950 font-bold text-xs flex items-center gap-1 shadow-sm cursor-pointer"
+                        className="px-3.5 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-black text-xs uppercase tracking-wider flex items-center gap-1 shadow-md cursor-pointer active:scale-95"
                       >
                         <Check className="w-3.5 h-3.5 stroke-[3]" />
-                        <span>ตัดเสร็จสิ้น (รับเงิน)</span>
+                        <span>COMPLETE (DONE)</span>
                       </button>
                     )}
 
                     {/* If Completed, can revert or stay */}
                     {b.status === 'completed' && (
-                      <span className="px-2.5 py-1 rounded-lg bg-emerald-500/10 text-emerald-400 text-xs font-bold border border-emerald-500/30 flex items-center gap-1">
-                        <CheckCircle className="w-3.5 h-3.5" /> ตัดเสร็จแล้ว
+                      <span className="px-3 py-1.5 rounded-xl bg-emerald-500/20 text-emerald-400 text-xs font-black uppercase tracking-wider border border-emerald-500/40 flex items-center gap-1">
+                        <CheckCircle className="w-3.5 h-3.5" /> COMPLETED
                       </span>
                     )}
 
@@ -317,10 +319,10 @@ export const QueueBoardView: React.FC<QueueBoardViewProps> = ({
                             b.id && onUpdateStatus(b.id, 'cancelled');
                           }
                         }}
-                        className="p-1.5 rounded-lg bg-stone-800 hover:bg-rose-950 text-stone-400 hover:text-rose-400 border border-stone-700 transition-colors cursor-pointer"
-                        title="ยกเลิกคิว"
+                        className="p-2 rounded-xl bg-[#0A0A0B] hover:bg-rose-950 text-gray-400 hover:text-rose-400 border border-white/10 transition-colors cursor-pointer"
+                        title="Cancel Queue"
                       >
-                        <X className="w-3.5 h-3.5" />
+                        <X className="w-4 h-4" />
                       </button>
                     )}
 
@@ -328,9 +330,9 @@ export const QueueBoardView: React.FC<QueueBoardViewProps> = ({
                       <button
                         type="button"
                         onClick={() => b.id && onUpdateStatus(b.id, 'confirmed')}
-                        className="px-2 py-1 rounded-lg bg-stone-800 hover:bg-stone-700 text-stone-300 text-xs cursor-pointer"
+                        className="px-2.5 py-1.5 rounded-xl bg-[#0A0A0B] hover:bg-[#1C1F26] text-gray-300 text-xs font-bold uppercase tracking-wider cursor-pointer"
                       >
-                        คืนสถานะ
+                        RESTORE
                       </button>
                     )}
                   </div>
