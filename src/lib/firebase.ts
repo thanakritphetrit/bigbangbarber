@@ -15,7 +15,15 @@ import {
   getDoc,
   serverTimestamp
 } from 'firebase/firestore';
-import { Booking, Barber, BarberService, BookingStatus, ShopInfo } from '../types';
+import { 
+  Booking, 
+  Barber, 
+  BarberService, 
+  BookingStatus, 
+  ShopInfo,
+  ShopExpense,
+  ShopTransaction 
+} from '../types';
 import { INITIAL_BARBERS, INITIAL_SERVICES, SHOP_INFO } from '../data/mockData';
 import firebaseConfigJson from '../../firebase-applet-config.json';
 
@@ -39,10 +47,14 @@ const BOOKINGS_COLLECTION = 'bookings';
 const BARBERS_COLLECTION = 'barbers';
 const SERVICES_COLLECTION = 'services';
 const SHOP_INFO_COLLECTION = 'shop_info';
+const EXPENSES_COLLECTION = 'expenses';
+const TRANSACTIONS_COLLECTION = 'transactions';
 const SHOP_INFO_DOC = 'main';
 
 // Local storage backup keys for offline resilience
 const LOCAL_BOOKINGS_KEY = 'bbb_bookings_cache';
+const LOCAL_EXPENSES_KEY = 'bbb_expenses';
+const LOCAL_TRANSACTIONS_KEY = 'bbb_transactions';
 const LOCAL_BARBERS_KEY = 'bbb_barbers';
 const LOCAL_SERVICES_KEY = 'bbb_services';
 const LOCAL_SHOP_INFO_KEY = 'bbb_shop_info';
@@ -209,6 +221,204 @@ export async function deleteBooking(bookingId: string): Promise<void> {
   } catch (error) {
     console.error('Error deleting booking:', error);
     throw error;
+  }
+}
+
+/**
+ * Update a booking's payment details (deposit, checkout, remaining balance, commission)
+ */
+export async function updateBookingPaymentDetails(
+  bookingId: string, 
+  updates: Partial<Booking>
+): Promise<void> {
+  try {
+    const cleanUpdates = {
+      ...updates,
+      updatedAt: Date.now()
+    };
+
+    if (!bookingId.startsWith('local_')) {
+      const docRef = doc(db, BOOKINGS_COLLECTION, bookingId);
+      await updateDoc(docRef, cleanUpdates);
+    }
+
+    // Update local cache
+    const cached = localStorage.getItem(LOCAL_BOOKINGS_KEY);
+    if (cached) {
+      const list: Booking[] = JSON.parse(cached);
+      const idx = list.findIndex(b => b.id === bookingId);
+      if (idx !== -1) {
+        list[idx] = { ...list[idx], ...cleanUpdates };
+        localStorage.setItem(LOCAL_BOOKINGS_KEY, JSON.stringify(list));
+      }
+    }
+  } catch (error) {
+    console.error('Error updating booking payment details:', error);
+    throw error;
+  }
+}
+
+/**
+ * Listen to Expenses from Firestore in real time
+ */
+export function subscribeToExpenses(onUpdate: (expenses: ShopExpense[]) => void) {
+  try {
+    const q = query(collection(db, EXPENSES_COLLECTION), orderBy('createdAt', 'desc'));
+    return onSnapshot(q, (snap) => {
+      const list: ShopExpense[] = [];
+      snap.forEach(d => {
+        list.push({ ...d.data(), id: d.id } as ShopExpense);
+      });
+      try {
+        localStorage.setItem(LOCAL_EXPENSES_KEY, JSON.stringify(list));
+      } catch {
+        // ignore
+      }
+      onUpdate(list);
+    }, (err) => {
+      console.warn('Firestore expenses subscribe error, using local:', err);
+      try {
+        const cached = localStorage.getItem(LOCAL_EXPENSES_KEY);
+        if (cached) {
+          onUpdate(JSON.parse(cached));
+        }
+      } catch {
+        // ignore
+      }
+    });
+  } catch (e) {
+    console.error('Error subscribing to expenses:', e);
+    return () => {};
+  }
+}
+
+/**
+ * Add an expense record to Firestore
+ */
+export async function addExpenseToFirestore(expense: Omit<ShopExpense, 'id'>): Promise<string> {
+  const expenseData = {
+    ...expense,
+    createdAt: Date.now(),
+    timestamp: serverTimestamp()
+  };
+
+  try {
+    const docRef = await addDoc(collection(db, EXPENSES_COLLECTION), expenseData);
+    try {
+      const cached = localStorage.getItem(LOCAL_EXPENSES_KEY);
+      const list: ShopExpense[] = cached ? JSON.parse(cached) : [];
+      list.unshift({ ...expenseData, id: docRef.id });
+      localStorage.setItem(LOCAL_EXPENSES_KEY, JSON.stringify(list));
+    } catch {
+      // ignore
+    }
+    return docRef.id;
+  } catch (err) {
+    console.error('Error adding expense to Firestore, using local fallback:', err);
+    const localId = 'local_exp_' + Date.now();
+    try {
+      const cached = localStorage.getItem(LOCAL_EXPENSES_KEY);
+      const list: ShopExpense[] = cached ? JSON.parse(cached) : [];
+      list.unshift({ ...expenseData, id: localId });
+      localStorage.setItem(LOCAL_EXPENSES_KEY, JSON.stringify(list));
+    } catch {
+      // ignore
+    }
+    return localId;
+  }
+}
+
+/**
+ * Delete an expense record from Firestore
+ */
+export async function deleteExpenseFromFirestore(expenseId: string): Promise<void> {
+  try {
+    if (!expenseId.startsWith('local_')) {
+      const docRef = doc(db, EXPENSES_COLLECTION, expenseId);
+      await deleteDoc(docRef);
+    }
+    try {
+      const cached = localStorage.getItem(LOCAL_EXPENSES_KEY);
+      if (cached) {
+        const list: ShopExpense[] = JSON.parse(cached).filter((e: ShopExpense) => e.id !== expenseId);
+        localStorage.setItem(LOCAL_EXPENSES_KEY, JSON.stringify(list));
+      }
+    } catch {
+      // ignore
+    }
+  } catch (err) {
+    console.error('Error deleting expense:', err);
+    throw err;
+  }
+}
+
+/**
+ * Listen to Transactions from Firestore in real time
+ */
+export function subscribeToTransactions(onUpdate: (transactions: ShopTransaction[]) => void) {
+  try {
+    const q = query(collection(db, TRANSACTIONS_COLLECTION), orderBy('createdAt', 'desc'));
+    return onSnapshot(q, (snap) => {
+      const list: ShopTransaction[] = [];
+      snap.forEach(d => {
+        list.push({ ...d.data(), id: d.id } as ShopTransaction);
+      });
+      try {
+        localStorage.setItem(LOCAL_TRANSACTIONS_KEY, JSON.stringify(list));
+      } catch {
+        // ignore
+      }
+      onUpdate(list);
+    }, (err) => {
+      console.warn('Firestore transactions subscribe error, using local:', err);
+      try {
+        const cached = localStorage.getItem(LOCAL_TRANSACTIONS_KEY);
+        if (cached) {
+          onUpdate(JSON.parse(cached));
+        }
+      } catch {
+        // ignore
+      }
+    });
+  } catch (e) {
+    console.error('Error subscribing to transactions:', e);
+    return () => {};
+  }
+}
+
+/**
+ * Add a financial transaction to Firestore
+ */
+export async function addTransactionToFirestore(tx: Omit<ShopTransaction, 'id'>): Promise<string> {
+  const txData = {
+    ...tx,
+    createdAt: Date.now(),
+    timestamp: serverTimestamp()
+  };
+
+  try {
+    const docRef = await addDoc(collection(db, TRANSACTIONS_COLLECTION), txData);
+    try {
+      const cached = localStorage.getItem(LOCAL_TRANSACTIONS_KEY);
+      const list: ShopTransaction[] = cached ? JSON.parse(cached) : [];
+      list.unshift({ ...txData, id: docRef.id });
+      localStorage.setItem(LOCAL_TRANSACTIONS_KEY, JSON.stringify(list));
+    } catch {
+      // ignore
+    }
+    return docRef.id;
+  } catch (err) {
+    console.error('Error adding transaction to Firestore, using local fallback:', err);
+    const localId = 'local_tx_' + Date.now();
+    try {
+      const cached = localStorage.getItem(LOCAL_TRANSACTIONS_KEY);
+      const list: ShopTransaction[] = cached ? JSON.parse(cached) : [];
+      list.unshift({ ...txData, id: localId });
+      localStorage.setItem(LOCAL_TRANSACTIONS_KEY, JSON.stringify(list));
+    } catch {
+      // ignore
+    }
+    return localId;
   }
 }
 

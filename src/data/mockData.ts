@@ -16,7 +16,8 @@ export const INITIAL_BARBERS: Barber[] = [
     instagram: '@ek_bigbangbarber',
     status: 'available',
     workDays: 'จันทร์ - เสาร์ (หยุดวันอาทิตย์)',
-    workHours: '10:00 - 19:30'
+    workHours: '10:00 - 19:30',
+    commissionRate: 50
   },
   {
     id: 'barber_boss',
@@ -33,7 +34,8 @@ export const INITIAL_BARBERS: Barber[] = [
     instagram: '@boss_hairlab',
     status: 'available',
     workDays: 'อังคาร - อาทิตย์ (หยุดวันจันทร์)',
-    workHours: '10:30 - 20:00'
+    workHours: '10:30 - 20:00',
+    commissionRate: 50
   },
   {
     id: 'barber_jack',
@@ -50,7 +52,8 @@ export const INITIAL_BARBERS: Barber[] = [
     instagram: '@jack_bigbangfade',
     status: 'available',
     workDays: 'พุธ - จันทร์ (หยุดวันอังคาร)',
-    workHours: '10:00 - 20:00'
+    workHours: '10:00 - 20:00',
+    commissionRate: 50
   }
 ];
 
@@ -142,5 +145,11 @@ export const SHOP_INFO: ShopInfo = {
   hasWifi: true,
   hasBeverages: true,
   hasParking: true,
-  policyNote: 'รองรับเงินสด, โอนผ่านพร้อมเพย์ (PromptPay), และบัตรเครดิตทุกธนาคาร ไม่มีค่าธรรมเนียม'
+  policyNote: 'รองรับเงินสด, โอนผ่านพร้อมเพย์ (PromptPay), และบัตรเครดิตทุกธนาคาร ไม่มีค่าธรรมเนียม',
+  promptPayNumber: '089-765-4321',
+  promptPayName: 'บิ๊กแบงบาร์เบอร์ (Bigbang Barber)',
+  promptPayBank: 'พร้อมเพย์ (ธ.กสิกรไทย / ทุกธนาคาร)',
+  requireDeposit: true,
+  defaultDepositAmount: 100,
+  defaultCommissionRate: 50
 };

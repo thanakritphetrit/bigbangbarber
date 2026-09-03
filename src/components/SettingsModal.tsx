@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   X, 
   Settings, 
@@ -25,7 +25,8 @@ import {
   Plus,
   Eye,
   EyeOff,
-  KeyRound
+  KeyRound,
+  RotateCcw
 } from 'lucide-react';
 import { Barber, Booking } from '../types';
 import { SHOP_INFO } from '../data/mockData';
@@ -53,6 +54,7 @@ interface SettingsModalProps {
   onShowToast: (msg: string, type?: 'success' | 'error' | 'info') => void;
   onEditBarber?: (barber: Barber) => void;
   onAddNewBarber?: () => void;
+  initialTab?: 'shop' | 'barbers' | 'sound' | 'database' | 'security';
 }
 
 export const SettingsModal: React.FC<SettingsModalProps> = ({
@@ -66,14 +68,28 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   onResetSampleData,
   onShowToast,
   onEditBarber,
-  onAddNewBarber
+  onAddNewBarber,
+  initialTab
 }) => {
   const [activeSubTab, setActiveSubTab] = useState<'shop' | 'barbers' | 'sound' | 'database' | 'security'>('shop');
   const [phoneInput, setPhoneInput] = useState(settings.shopPhone || SHOP_INFO.phone);
   const [noticeInput, setNoticeInput] = useState(settings.shopNotice || 'เปิดรับจองตามปกติ 10:00 - 20:00 น.');
   const [pinInput, setPinInput] = useState(settings.staffPin || '1234');
   const [showPinText, setShowPinText] = useState(false);
+  const [showCurrentPin, setShowCurrentPin] = useState(false);
   const [isResetting, setIsResetting] = useState(false);
+
+  // Sync state whenever modal opens or settings update
+  useEffect(() => {
+    if (isOpen) {
+      setPhoneInput(settings.shopPhone || SHOP_INFO.phone);
+      setNoticeInput(settings.shopNotice || 'เปิดรับจองตามปกติ 10:00 - 20:00 น.');
+      setPinInput(settings.staffPin || '1234');
+      if (initialTab) {
+        setActiveSubTab(initialTab);
+      }
+    }
+  }, [isOpen, settings.shopPhone, settings.shopNotice, settings.staffPin, initialTab]);
 
   if (!isOpen) return null;
 
@@ -241,8 +257,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 : 'text-gray-400 hover:text-white hover:bg-[#1C1F26]'
             }`}
           >
-            <Shield className="w-3.5 h-3.5" />
-            <span>ความปลอดภัย</span>
+            <KeyRound className="w-3.5 h-3.5" />
+            <span>ความปลอดภัย & รหัส PIN</span>
           </button>
         </div>
 
@@ -251,6 +267,28 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           {/* 1. SHOP OPERATIONS */}
           {activeSubTab === 'shop' && (
             <div className="space-y-4 text-xs animate-in fade-in">
+              {/* Quick Admin Passcode / PIN Card */}
+              <div className="bg-[#0A0A0B] p-4 rounded-2xl border border-[#FACC15]/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-1.5 font-black uppercase tracking-wider text-[#FACC15] text-xs">
+                    <KeyRound className="w-4 h-4" />
+                    <span>รหัส PIN ผู้ดูแลระบบ (ADMIN PASSCODE)</span>
+                  </div>
+                  <p className="text-gray-400 text-[11px] leading-relaxed">
+                    สถานะรหัส: <strong className="font-mono text-emerald-400 tracking-wider bg-emerald-500/10 px-2 py-0.5 rounded ml-1 font-bold">•••••••• (เข้ารหัสปลอดภัย)</strong>
+                    <span className="text-gray-500 ml-1.5">(ใช้ปลดล็อกปุ่ม LOCKED และแก้ไขระบบ)</span>
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setActiveSubTab('security')}
+                  className="px-3 py-2 rounded-xl bg-[#FACC15] hover:bg-yellow-400 text-black font-black uppercase text-xs cursor-pointer flex items-center gap-1.5 shadow-md active:scale-95 shrink-0"
+                >
+                  <Edit3 className="w-3.5 h-3.5" />
+                  <span>เปลี่ยนรหัส PIN</span>
+                </button>
+              </div>
+
               <div className="bg-[#0A0A0B] p-4 rounded-2xl border border-white/5 space-y-3">
                 <h4 className="font-black uppercase tracking-wider text-[#FACC15] text-xs flex items-center gap-2">
                   <Store className="w-4 h-4" />
@@ -561,20 +599,42 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           {/* 5. SECURITY & PIN */}
           {activeSubTab === 'security' && (
             <div className="space-y-4 text-xs animate-in fade-in">
-              <div className="bg-[#0A0A0B] p-4 rounded-2xl border border-white/5 space-y-3.5">
+              <div className="bg-[#0A0A0B] p-5 rounded-2xl border border-white/10 space-y-4 shadow-xl">
                 <div>
-                  <h4 className="font-black uppercase tracking-wider text-[#FACC15] text-xs flex items-center gap-2">
-                    <Shield className="w-4 h-4" />
-                    <span>รหัส PIN สำหรับเข้าสู่โหมดแก้ไขข้อมูล (Admin Edit PIN)</span>
+                  <h4 className="font-black uppercase tracking-wider text-[#FACC15] text-sm flex items-center gap-2">
+                    <KeyRound className="w-4 h-4 text-[#FACC15]" />
+                    <span>เปลี่ยนรหัสผ่านผู้ดูแลระบบ (ADMIN PASSCODE / PIN)</span>
                   </h4>
                   <p className="text-gray-400 text-[11px] leading-relaxed mt-1">
-                    ระบบจะถามรหัส PIN เมื่อมีการกดปุ่มแก้ไขข้อมูลช่าง, บริการ, ข้อมูลร้าน หรือเปิดการตั้งค่า
+                    รหัสนี้ใช้สำหรับปลดล็อกปุ่ม <strong className="text-white">[LOCKED]</strong> ที่แถบด้านบนสุด และใช้สำหรับเข้าโหมดแก้ไขข้อมูลช่าง, บริการ, และการตั้งค่าร้าน
                   </p>
                 </div>
 
-                <div className="pt-1 space-y-2">
-                  <label className="text-gray-400 font-bold uppercase tracking-wider text-[10px] block">
-                    ตั้งรหัส PIN จัดการระบบ (Admin Passcode)
+                {/* Current PIN Display */}
+                <div className="p-3.5 rounded-xl bg-[#16181D] border border-white/10 flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <span className="text-gray-400 font-bold text-[11px] block">รหัส PIN ปัจจุบันที่ใช้งานอยู่:</span>
+                    <span className="text-gray-500 text-[10px]">Active Security Passcode (ซ่อนรหัสเพื่อความปลอดภัย)</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="font-mono text-[#FACC15] font-black text-xl tracking-widest px-3 py-1 bg-[#0A0A0B] rounded-lg border border-[#FACC15]/40 shadow-inner">
+                      {showCurrentPin ? (settings.staffPin || '1234') : '••••••••'}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setShowCurrentPin(!showCurrentPin)}
+                      className="p-2 rounded-lg bg-[#0A0A0B] hover:bg-white/10 text-gray-400 hover:text-white border border-white/10 cursor-pointer transition-all"
+                      title={showCurrentPin ? 'ซ่อนรหัส' : 'กดเพื่อดูรหัส'}
+                    >
+                      {showCurrentPin ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
+                </div>
+
+                {/* New PIN Input */}
+                <div className="pt-2 space-y-2.5">
+                  <label className="text-white font-black uppercase tracking-wider text-[11px] block">
+                    กรอกรหัส PIN ใหม่ที่ต้องการเปลี่ยน (4 - 8 หลัก)
                   </label>
                   <div className="flex items-center gap-2">
                     <div className="relative flex-1">
@@ -583,13 +643,14 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                         maxLength={8}
                         value={pinInput}
                         onChange={(e) => setPinInput(e.target.value.replace(/[^0-9]/g, ''))}
-                        className="w-full px-3.5 py-2.5 rounded-xl bg-[#1C1F26] border border-white/10 text-white font-mono text-center font-bold tracking-widest text-base focus:outline-none focus:border-[#FACC15]"
-                        placeholder="1234"
+                        className="w-full px-4 py-3 rounded-xl bg-[#16181D] border border-white/10 text-white font-mono text-center font-black tracking-widest text-lg focus:outline-none focus:border-[#FACC15] transition-all"
+                        placeholder="••••••••"
                       />
                       <button
                         type="button"
                         onClick={() => setShowPinText(!showPinText)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white p-1"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white p-1.5 cursor-pointer"
+                        title={showPinText ? 'ซ่อนรหัส' : 'แสดงรหัส'}
                       >
                         {showPinText ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                       </button>
@@ -603,24 +664,68 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                           return;
                         }
                         onUpdateSettings({ staffPin: pinInput });
-                        onShowToast(`บันทึกรหัส PIN ใหม่ (${pinInput}) สำเร็จ`, 'success');
+                        onShowToast('บันทึกรหัส PIN ใหม่สำเร็จเรียบร้อย!', 'success');
                       }}
-                      className="px-4 py-2.5 rounded-xl bg-[#FACC15] hover:bg-yellow-400 text-black font-black uppercase text-xs cursor-pointer flex items-center gap-1.5 shadow-md active:scale-95"
+                      className="px-5 py-3 rounded-xl bg-[#FACC15] hover:bg-yellow-400 text-black font-black uppercase text-xs cursor-pointer flex items-center gap-1.5 shadow-lg active:scale-95 transition-all shrink-0"
                     >
                       <Check className="w-4 h-4 stroke-[3]" />
-                      <span>บันทึก PIN</span>
+                      <span>บันทึกรหัสใหม่</span>
                     </button>
                   </div>
-                  <p className="text-[10px] text-gray-500 font-mono">
-                    * ค่าเริ่มต้นของระบบคือ <strong className="text-white">1234</strong>
-                  </p>
+
+                  {/* Quick Keypad */}
+                  <div className="pt-2">
+                    <span className="text-[10px] text-gray-400 font-bold block mb-1.5">
+                      กดแป้นตัวเลขเพื่อกรอกรหัส:
+                    </span>
+                    <div className="grid grid-cols-6 gap-1.5 max-w-sm">
+                      {['1', '2', '3', '4', '5', '6', '7', '8', '9', '0'].map((digit) => (
+                        <button
+                          key={digit}
+                          type="button"
+                          onClick={() => {
+                            if (pinInput.length < 8) {
+                              setPinInput(prev => prev + digit);
+                            }
+                          }}
+                          className="py-2.5 rounded-lg bg-[#16181D] hover:bg-[#FACC15]/20 text-white hover:text-[#FACC15] font-mono font-bold text-sm text-center border border-white/5 active:scale-95 cursor-pointer transition-all"
+                        >
+                          {digit}
+                        </button>
+                      ))}
+                      <button
+                        type="button"
+                        onClick={() => setPinInput('')}
+                        className="py-2.5 rounded-lg bg-red-500/15 hover:bg-red-500/25 text-red-400 font-bold text-xs text-center border border-red-500/20 active:scale-95 cursor-pointer col-span-2 transition-all"
+                      >
+                        ล้างค่า (Clear)
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Reset to default PIN button */}
+                  <div className="pt-3 border-t border-white/5 flex items-center justify-between text-[11px]">
+                    <span className="text-gray-400">ต้องการคืนค่าเป็นรหัสเริ่มต้นของระบบ?</span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setPinInput('1234');
+                        onUpdateSettings({ staffPin: '1234' });
+                        onShowToast('รีเซ็ตรหัส PIN เริ่มต้นเรียบร้อย', 'info');
+                      }}
+                      className="text-[#FACC15] hover:underline font-bold flex items-center gap-1 cursor-pointer transition-all active:scale-95"
+                    >
+                      <RotateCcw className="w-3 h-3" />
+                      <span>รีเซ็ตรหัสเริ่มต้น</span>
+                    </button>
+                  </div>
                 </div>
 
-                <div className="pt-3 border-t border-white/5 space-y-2">
+                <div className="pt-4 border-t border-white/5 space-y-2">
                   <div className="flex items-center justify-between">
                     <div>
                       <span className="text-white font-bold block text-xs">บังคับยืนยัน PIN ก่อนเปลี่ยนสถานะคิว</span>
-                      <span className="text-gray-500 text-[10px]">Staff Queue Actions</span>
+                      <span className="text-gray-500 text-[10px]">Staff Queue Actions Protection</span>
                     </div>
                     <button
                       type="button"

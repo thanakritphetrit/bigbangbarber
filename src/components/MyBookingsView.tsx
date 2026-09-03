@@ -11,7 +11,8 @@ import {
   Phone, 
   CheckCircle2, 
   XCircle,
-  Ticket
+  Ticket,
+  QrCode
 } from 'lucide-react';
 import { formatThaiDate, formatPhoneNumber } from '../utils/dateHelpers';
 
@@ -20,13 +21,15 @@ interface MyBookingsViewProps {
   onSelectBookingForTicket: (booking: Booking) => void;
   onCancelBooking: (bookingId: string) => void;
   onGoToBooking: () => void;
+  onOpenDepositModal?: (booking: Booking) => void;
 }
 
 export const MyBookingsView: React.FC<MyBookingsViewProps> = ({
   bookings,
   onSelectBookingForTicket,
   onCancelBooking,
-  onGoToBooking
+  onGoToBooking,
+  onOpenDepositModal
 }) => {
   const [searchPhone, setSearchPhone] = useState('');
   const [hasSearched, setHasSearched] = useState(false);
@@ -157,6 +160,11 @@ export const MyBookingsView: React.FC<MyBookingsViewProps> = ({
                         {b.bookingCode}
                       </span>
                       <span className="text-xs font-bold text-gray-400 uppercase">• {b.customerName}</span>
+                      {b.isWalkIn && (
+                        <span className="px-1.5 py-0.5 rounded-md bg-[#FACC15]/20 text-[#FACC15] font-black text-[9px] border border-[#FACC15]/30">
+                          Walk-in
+                        </span>
+                      )}
                     </div>
                     <div>{getStatusBadge(b.status)}</div>
                   </div>
@@ -191,6 +199,38 @@ export const MyBookingsView: React.FC<MyBookingsViewProps> = ({
                       <span className="text-[10px] text-gray-500 uppercase font-bold block">PRICE</span>
                       <span className="text-white font-black font-heading text-sm">฿{b.servicePrice.toLocaleString()}</span>
                     </div>
+                  </div>
+
+                  {/* Deposit status and action */}
+                  <div className="flex items-center justify-between text-xs pt-0.5">
+                    {b.depositPaid ? (
+                      <span className="px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-400 font-bold text-[10px] border border-emerald-500/30">
+                        ✓ มัดจำแล้ว ฿{b.depositAmount || 100}
+                      </span>
+                    ) : (
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] text-amber-400 font-bold">
+                          ยังไม่ได้ชำระมัดจำ
+                        </span>
+                        {onOpenDepositModal && (
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onOpenDepositModal(b);
+                            }}
+                            className="px-2.5 py-1 rounded-xl bg-[#FACC15] text-black font-black text-[10px] uppercase tracking-wider flex items-center gap-1 cursor-pointer hover:bg-yellow-400"
+                          >
+                            <QrCode className="w-3 h-3" />
+                            <span>จ่ายมัดจำ QR</span>
+                          </button>
+                        )}
+                      </div>
+                    )}
+
+                    <span className="text-[10px] text-gray-400">
+                      จ่ายที่ร้าน: ฿{Math.max(0, b.servicePrice - (b.depositPaid ? (b.depositAmount || 100) : 0))}
+                    </span>
                   </div>
 
                   {/* Bottom View Ticket CTA */}

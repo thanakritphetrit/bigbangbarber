@@ -94,6 +94,20 @@ export const BookingForm: React.FC<BookingFormProps> = ({
             className="w-full px-4 py-2.5 rounded-xl bg-[#0A0A0B] border border-white/10 text-white placeholder-gray-600 text-xs focus:outline-none focus:border-[#FACC15] focus:ring-1 focus:ring-[#FACC15] transition-all resize-none"
           />
         </div>
+        {/* PromptPay Deposit Notice */}
+        <div className="bg-gradient-to-r from-amber-500/10 via-[#FACC15]/10 to-amber-500/10 border border-[#FACC15]/30 p-3.5 rounded-2xl flex items-start gap-3">
+          <div className="w-7 h-7 rounded-xl bg-[#FACC15] text-black flex items-center justify-center font-black shrink-0 mt-0.5 shadow-sm text-xs">
+            ฿
+          </div>
+          <div className="text-xs space-y-0.5">
+            <span className="font-black text-white uppercase tracking-tight block">
+              ระบบมัดจำจองคิวออนไลน์ (Deposit ฿100)
+            </span>
+            <p className="text-[11px] text-gray-300 leading-relaxed font-medium">
+              เพื่อล็อคคิวตัดผมให้อัตโนมัติ ท่านสามารถสแกนชำระมัดจำ 100 บาท ผ่าน QR พร้อมเพย์ ยอดส่วนที่เหลือชำระหน้าร้านได้ตามสะดวก
+            </p>
+          </div>
+        </div>
       </div>
     </div>
   );

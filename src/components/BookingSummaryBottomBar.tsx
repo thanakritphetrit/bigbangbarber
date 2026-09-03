@@ -11,6 +11,7 @@ interface BookingSummaryBottomBarProps {
   missingFieldMessage?: string;
   onProceed: () => void;
   isSubmitting?: boolean;
+  depositAmount?: number;
 }
 
 export const BookingSummaryBottomBar: React.FC<BookingSummaryBottomBarProps> = ({
@@ -22,7 +23,8 @@ export const BookingSummaryBottomBar: React.FC<BookingSummaryBottomBarProps> = (
   isValid,
   missingFieldMessage,
   onProceed,
-  isSubmitting
+  isSubmitting,
+  depositAmount = 100
 }) => {
   return (
     <div className="sticky bottom-0 z-40 bg-[#0A0A0B]/95 backdrop-blur-md border-t border-white/10 p-4 shadow-[0_-15px_30px_rgba(0,0,0,0.8)]">
@@ -42,6 +44,11 @@ export const BookingSummaryBottomBar: React.FC<BookingSummaryBottomBarProps> = (
               {serviceName}
             </span>
           </div>
+          {servicePrice > 0 && (
+            <div className="text-[10px] text-emerald-400 font-bold mt-0.5">
+              <span>มัดจำ ฿{depositAmount} (ชำระหน้าร้าน ฿{Math.max(0, servicePrice - depositAmount)})</span>
+            </div>
+          )}
         </div>
 
         {/* Action Button */}

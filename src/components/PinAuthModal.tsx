@@ -8,6 +8,7 @@ interface PinAuthModalProps {
   correctPin: string;
   title?: string;
   description?: string;
+  onOpenChangePin?: () => void;
 }
 
 export const PinAuthModal: React.FC<PinAuthModalProps> = ({
@@ -16,7 +17,8 @@ export const PinAuthModal: React.FC<PinAuthModalProps> = ({
   onSuccess,
   correctPin,
   title = 'กรุณาใส่รหัสเพื่อแก้ไขข้อมูล',
-  description = 'กรอกรหัส PIN ผู้ดูแล/พนักงานเพื่อเข้าสู่โหมดแก้ไข'
+  description = 'กรอกรหัส PIN ผู้ดูแล/พนักงานเพื่อเข้าสู่โหมดแก้ไข',
+  onOpenChangePin
 }) => {
   const [pin, setPin] = useState<string>('');
   const [errorMsg, setErrorMsg] = useState<string>('');
@@ -209,15 +211,24 @@ export const PinAuthModal: React.FC<PinAuthModalProps> = ({
             </button>
           </form>
 
-          {/* Hint / Helper */}
+          {/* Security note & Change PIN button */}
           <div className="bg-[#0A0A0B] p-2.5 rounded-xl border border-white/5 flex items-center justify-between text-[10px] text-gray-400">
-            <span className="flex items-center gap-1">
+            <span className="flex items-center gap-1.5">
               <ShieldCheck className="w-3.5 h-3.5 text-[#FACC15]" />
-              <span>รหัสเริ่มต้นจากระบบ:</span>
+              <span>ระบบรักษาความปลอดภัยสำหรับผู้ดูแลร้าน</span>
             </span>
-            <span className="font-mono font-black text-[#FACC15] bg-[#1C1F26] px-2 py-0.5 rounded border border-white/10">
-              {correctPin || '1234'}
-            </span>
+            {onOpenChangePin && (
+              <button
+                type="button"
+                onClick={() => {
+                  onClose();
+                  onOpenChangePin();
+                }}
+                className="text-[10px] text-[#FACC15] hover:text-yellow-300 font-bold underline cursor-pointer"
+              >
+                เปลี่ยนรหัส PIN
+              </button>
+            )}
           </div>
         </div>
       </div>

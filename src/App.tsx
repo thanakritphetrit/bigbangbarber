@@ -4,7 +4,10 @@ import {
   BarberService, 
   Booking, 
   BookingStatus,
-  ShopInfo
+  ShopInfo,
+  ShopExpense,
+  ShopTransaction,
+  PaymentMethod
 } from './types';
 import { 
   INITIAL_BARBERS, 
@@ -26,7 +29,13 @@ import {
   saveServiceToFirestore,
   deleteServiceFromFirestore,
   subscribeToShopInfo,
-  saveShopInfoToFirestore
+  saveShopInfoToFirestore,
+  subscribeToExpenses,
+  addExpenseToFirestore,
+  deleteExpenseFromFirestore,
+  subscribeToTransactions,
+  addTransactionToFirestore,
+  updateBookingPaymentDetails
 } from './lib/firebase';
 import { 
   toDateString, 
@@ -54,6 +63,9 @@ import { ServiceEditModal } from './components/ServiceEditModal';
 import { BarberEditModal } from './components/BarberEditModal';
 import { PinAuthModal } from './components/PinAuthModal';
 import { Toast } from './components/Toast';
+import { DepositPaymentModal } from './components/DepositPaymentModal';
+import { CheckoutPaymentModal } from './components/CheckoutPaymentModal';
+import { FinanceAccountingView } from './components/FinanceAccountingView';
 import { playBarberChime } from './utils/audio';
 import { seedSampleBookings } from './lib/firebase';
 import { 
@@ -72,12 +84,14 @@ import {
   Settings,
   Lock,
   Unlock,
-  KeyRound
+  KeyRound,
+  Zap,
+  Plus
 } from 'lucide-react';
 
 export default function App() {
   // Navigation
-  const [activeTab, setActiveTab] = useState<'book' | 'my-bookings' | 'queue-board'>('book');
+  const [activeTab, setActiveTab] = useState<'book' | 'my-bookings' | 'queue-board' | 'finance'>('book');
 
   // Master Data
   const [barbers, setBarbers] = useState<Barber[]>(() => {
@@ -99,6 +113,8 @@ export default function App() {
     return INITIAL_SERVICES;
   });
   const [bookings, setBookings] = useState<Booking[]>([]);
+  const [expenses, setExpenses] = useState<ShopExpense[]>([]);
+  const [transactions, setTransactions] = useState<ShopTransaction[]>([]);
 
   // Shop & App Settings
   const [shopInfo, setShopInfo] = useState<ShopInfo>(() => {
@@ -111,23 +127,49 @@ export default function App() {
     return SHOP_INFO;
   });
 
-  const [shopSettings, setShopSettings] = useState<ShopSettingsState>({
-    isOnlineBookingOpen: true,
-    autoConfirmWalkIn: true,
-    soundEnabled: true,
-    staffPinRequired: false,
-    staffPin: '1234',
-    shopPhone: shopInfo.phone || SHOP_INFO.phone,
-    shopNotice: 'เปิดบริการตามปกติ 10:00 - 20:00 น. รับจองคิว 24 ชม.',
-    hapticEnabled: true
+  const [shopSettings, setShopSettings] = useState<ShopSettingsState>(() => {
+    try {
+      const saved = localStorage.getItem('bbb_settings');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        return {
+          isOnlineBookingOpen: true,
+          autoConfirmWalkIn: true,
+          soundEnabled: true,
+          staffPinRequired: false,
+          staffPin: '1234',
+          shopPhone: SHOP_INFO.phone,
+          shopNotice: 'เปิดบริการตามปกติ 10:00 - 20:00 น. รับจองคิว 24 ชม.',
+          hapticEnabled: true,
+          ...parsed
+        };
+      }
+    } catch {
+      // fallback
+    }
+    return {
+      isOnlineBookingOpen: true,
+      autoConfirmWalkIn: true,
+      soundEnabled: true,
+      staffPinRequired: false,
+      staffPin: '1234',
+      shopPhone: shopInfo.phone || SHOP_INFO.phone,
+      shopNotice: 'เปิดบริการตามปกติ 10:00 - 20:00 น. รับจองคิว 24 ชม.',
+      hapticEnabled: true
+    };
   });
 
-  const handleUpdateShopInfo = (updated: ShopInfo) => {
+  const handleUpdateShopInfo = async (updated: ShopInfo) => {
     setShopInfo(updated);
     try {
       localStorage.setItem('bbb_shop_info', JSON.stringify(updated));
     } catch {
       // ignore
+    }
+    try {
+      await saveShopInfoToFirestore(updated);
+    } catch (err) {
+      console.error('Failed to sync shop info to Firestore:', err);
     }
     setShopSettings(prev => ({
       ...prev,
@@ -267,6 +309,7 @@ export default function App() {
   const [isShopInfoOpen, setIsShopInfoOpen] = useState<boolean>(false);
   const [isQuickWalkInOpen, setIsQuickWalkInOpen] = useState<boolean>(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState<boolean>(false);
+  const [settingsInitialTab, setSettingsInitialTab] = useState<'shop' | 'barbers' | 'sound' | 'database' | 'security'>('shop');
   const [barberModalState, setBarberModalState] = useState<{
     isOpen: boolean;
     barber: Barber | null;
@@ -280,6 +323,20 @@ export default function App() {
   }>({
     isOpen: false,
     service: null
+  });
+  const [depositModalState, setDepositModalState] = useState<{
+    isOpen: boolean;
+    booking: Booking | null;
+  }>({
+    isOpen: false,
+    booking: null
+  });
+  const [checkoutModalState, setCheckoutModalState] = useState<{
+    isOpen: boolean;
+    booking: Booking | null;
+  }>({
+    isOpen: false,
+    booking: null
   });
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
 
@@ -335,12 +392,24 @@ export default function App() {
     initializeFirestoreData();
 
     // Subscribe to real-time booking stream
-    const unsubscribe = subscribeToBookings((updatedBookings) => {
+    const unsubscribeBookings = subscribeToBookings((updatedBookings) => {
       setBookings(updatedBookings);
     });
 
+    // Subscribe to real-time expenses stream
+    const unsubscribeExpenses = subscribeToExpenses((updatedExpenses) => {
+      setExpenses(updatedExpenses);
+    });
+
+    // Subscribe to real-time transactions stream
+    const unsubscribeTransactions = subscribeToTransactions((updatedTransactions) => {
+      setTransactions(updatedTransactions);
+    });
+
     return () => {
-      unsubscribe();
+      unsubscribeBookings();
+      unsubscribeExpenses();
+      unsubscribeTransactions();
     };
   }, []);
 
@@ -428,6 +497,7 @@ export default function App() {
       }
 
       const bookingCode = generateBookingCode();
+      const depositAmount = shopInfo.defaultDepositAmount || 100;
       const newBookingData: Omit<Booking, 'id'> = {
         bookingCode,
         customerName: customerName.trim(),
@@ -442,7 +512,11 @@ export default function App() {
         date: selectedDate,
         timeSlot: selectedTime,
         status: 'confirmed',
-        createdAt: Date.now()
+        createdAt: Date.now(),
+        depositAmount,
+        depositPaid: false,
+        paymentStatus: 'unpaid',
+        commissionRate: 50
       };
 
       const docId = await createBooking(newBookingData);
@@ -473,6 +547,206 @@ export default function App() {
       });
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  // Walk-in Submission Handler
+  const handleCreateWalkIn = async (walkInData: Omit<Booking, 'id'>, autoOpenTicket = true): Promise<string> => {
+    try {
+      const docId = await createBooking(walkInData);
+      
+      const fullBooking: Booking = {
+        ...walkInData,
+        id: docId
+      };
+
+      // If user chose upfront payment (cash or promptpay qr)
+      if (walkInData.paymentStatus === 'completed' && walkInData.paidAmount) {
+        const barberCommission = walkInData.barberCommission || Math.round(walkInData.paidAmount * 0.5);
+        const shopShare = walkInData.shopShare || (walkInData.paidAmount - barberCommission);
+
+        await addTransactionToFirestore({
+          bookingId: docId,
+          bookingCode: walkInData.bookingCode,
+          type: 'service_payment',
+          amount: walkInData.paidAmount,
+          barberId: walkInData.barberId,
+          barberName: walkInData.barberName,
+          paymentMethod: walkInData.paymentMethod || 'cash',
+          barberCommission,
+          shopShare,
+          note: `Walk-in หน้าร้าน #${walkInData.bookingCode} - ${walkInData.serviceName} (ช่าง ${walkInData.barberName} ได้รับ ฿${barberCommission})`,
+          date: walkInData.date || toDateString(new Date()),
+          createdAt: Date.now(),
+          serviceName: walkInData.serviceName
+        });
+      }
+
+      if (shopSettings.soundEnabled) {
+        playBarberChime();
+      }
+
+      setToast({
+        message: `เพิ่มคิว Walk-in #${walkInData.bookingCode} (ช่าง ${walkInData.barberName}) เรียบร้อย!`,
+        type: 'success'
+      });
+
+      if (autoOpenTicket) {
+        setActiveTicketBooking(fullBooking);
+      }
+
+      return docId;
+    } catch (err) {
+      console.error('Walk-in submission error:', err);
+      setToast({
+        message: 'เกิดข้อผิดพลาดในการบันทึก Walk-in กรุณาลองใหม่',
+        type: 'error'
+      });
+      throw err;
+    }
+  };
+
+  // Payment & Finance Handlers
+  const handleConfirmDepositPayment = async (bookingId: string, depositAmount: number, slipNote?: string) => {
+    try {
+      const targetBooking = bookings.find(b => b.id === bookingId) || activeTicketBooking;
+      
+      await updateBookingPaymentDetails(bookingId, {
+        depositPaid: true,
+        depositAmount,
+        depositPaidAt: Date.now(),
+        depositSlipNote: slipNote || '',
+        paymentStatus: 'deposit_paid'
+      });
+
+      // Record transaction
+      if (targetBooking) {
+        await addTransactionToFirestore({
+          bookingId,
+          bookingCode: targetBooking.bookingCode,
+          type: 'deposit',
+          amount: depositAmount,
+          barberId: targetBooking.barberId,
+          barberName: targetBooking.barberName,
+          paymentMethod: 'promptpay_qr',
+          note: `มัดจำคิว #${targetBooking.bookingCode} (${targetBooking.customerName})`,
+          date: targetBooking.date || toDateString(new Date()),
+          createdAt: Date.now(),
+          serviceName: targetBooking.serviceName
+        });
+      }
+
+      // Update active ticket state if currently viewing it
+      if (activeTicketBooking && activeTicketBooking.id === bookingId) {
+        setActiveTicketBooking(prev => prev ? {
+          ...prev,
+          depositPaid: true,
+          depositAmount,
+          paymentStatus: 'deposit_paid'
+        } : null);
+      }
+
+      if (shopSettings.soundEnabled) {
+        playBarberChime();
+      }
+
+      setToast({
+        message: `บันทึกการรับเงินมัดจำ ฿${depositAmount} สำเร็จแล้ว!`,
+        type: 'success'
+      });
+    } catch (err) {
+      console.error('Error confirming deposit:', err);
+      setToast({
+        message: 'เกิดข้อผิดพลาดในการบันทึกมัดจำ',
+        type: 'error'
+      });
+    }
+  };
+
+  const handleCompleteCheckout = async (
+    bookingId: string,
+    paymentMethod: PaymentMethod,
+    totalPaid: number,
+    barberCommission: number,
+    shopShare: number
+  ) => {
+    try {
+      const targetBooking = bookings.find(b => b.id === bookingId);
+      if (!targetBooking) return;
+
+      await updateBookingPaymentDetails(bookingId, {
+        status: 'completed',
+        paymentStatus: 'completed',
+        paidAmount: totalPaid,
+        paymentMethod,
+        barberCommission,
+        shopShare,
+        settledAt: Date.now()
+      });
+
+      // Record completed transaction
+      await addTransactionToFirestore({
+        bookingId,
+        bookingCode: targetBooking.bookingCode,
+        type: 'service_payment',
+        amount: totalPaid,
+        barberId: targetBooking.barberId,
+        barberName: targetBooking.barberName,
+        paymentMethod,
+        barberCommission,
+        shopShare,
+        note: `ชำระค่าบริการ #${targetBooking.bookingCode} - ${targetBooking.serviceName} (ช่าง ${targetBooking.barberName} ได้รับ ฿${barberCommission})`,
+        date: targetBooking.date || toDateString(new Date()),
+        createdAt: Date.now(),
+        serviceName: targetBooking.serviceName
+      });
+
+      if (shopSettings.soundEnabled) {
+        playBarberChime();
+      }
+
+      setToast({
+        message: `เช็คบิลเสร็จสิ้น! รับเงิน ฿${totalPaid} (ค่าคอมช่าง ${targetBooking.barberName} 50%: ฿${barberCommission})`,
+        type: 'success'
+      });
+    } catch (err) {
+      console.error('Error during checkout:', err);
+      setToast({
+        message: 'เกิดข้อผิดพลาดในการเช็คบิล',
+        type: 'error'
+      });
+    }
+  };
+
+  const handleAddExpense = async (expense: Omit<ShopExpense, 'id'>) => {
+    try {
+      await addExpenseToFirestore(expense);
+      setToast({
+        message: `บันทึกรายจ่าย "${expense.title}" ฿${expense.amount} สำเร็จ`,
+        type: 'success'
+      });
+    } catch (err) {
+      console.error('Error adding expense:', err);
+      setToast({
+        message: 'เกิดข้อผิดพลาดในการบันทึกรายจ่าย',
+        type: 'error'
+      });
+    }
+  };
+
+  const handleDeleteExpense = async (expenseId: string) => {
+    try {
+      await deleteExpenseFromFirestore(expenseId);
+      setToast({
+        message: 'ลบรายการค่าใช้จ่ายเรียบร้อย',
+        type: 'info'
+      });
+    } catch (err) {
+      console.error('Error deleting expense:', err);
+      setToast({
+        message: 'เกิดข้อผิดพลาดในการลบรายจ่าย',
+        type: 'error'
+      });
     }
   };
 
@@ -536,10 +810,18 @@ export default function App() {
   };
 
   const handleUpdateSettings = (newSettings: Partial<ShopSettingsState>) => {
-    setShopSettings(prev => ({
-      ...prev,
-      ...newSettings
-    }));
+    setShopSettings(prev => {
+      const updated = {
+        ...prev,
+        ...newSettings
+      };
+      try {
+        localStorage.setItem('bbb_settings', JSON.stringify(updated));
+      } catch {
+        // ignore
+      }
+      return updated;
+    });
   };
 
   const handleResetSampleData = async () => {
@@ -579,11 +861,20 @@ export default function App() {
           activeTab={activeTab}
           setActiveTab={setActiveTab}
           onOpenShopInfo={() => setIsShopInfoOpen(true)}
-          onOpenSettings={() => requireAdminAuth(() => setIsSettingsOpen(true), 'ตั้งค่าระบบร้าน', 'กรอกรหัส PIN เพื่อเข้าสู่หน้าตั้งค่าระบบร้าน')}
+          onOpenSettings={() => {
+            setSettingsInitialTab('shop');
+            setIsSettingsOpen(true);
+          }}
+          onOpenQuickWalkIn={() => setIsQuickWalkInOpen(true)}
           totalActiveBookingsToday={totalActiveBookingsToday}
           shopInfo={shopInfo}
           isAdminUnlocked={isAdminUnlocked}
           onToggleAdminLock={handleToggleAdminLock}
+          staffPin={shopSettings.staffPin || '1234'}
+          onOpenSecuritySettings={() => {
+            setSettingsInitialTab('security');
+            setIsSettingsOpen(true);
+          }}
         />
 
         {/* Main Content Area */}
@@ -621,40 +912,35 @@ export default function App() {
                 </div>
               )}
 
-              {/* Hero Banner Feature */}
-              <div className="relative rounded-3xl overflow-hidden bg-[#1C1F26] border border-white/10 p-5 shadow-xl">
-                <div className="flex items-start justify-between gap-3">
+
+              {/* Quick Walk-in Quick Entry Card */}
+              <div className="bg-gradient-to-r from-amber-500/15 via-[#FACC15]/10 to-amber-500/15 border border-[#FACC15]/30 p-4 rounded-3xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xl">
+                <div className="flex items-center gap-3">
+                  <div className="w-11 h-11 rounded-2xl bg-[#FACC15] text-black flex items-center justify-center font-black shrink-0 shadow-lg">
+                    <Zap className="w-6 h-6 fill-black stroke-black" />
+                  </div>
                   <div>
-                    <div className="flex items-center gap-1.5 text-[#FACC15] text-xs font-black uppercase tracking-wider mb-1">
-                      <Sparkles className="w-4 h-4" />
-                      <span>REAL-TIME QUEUE SYSTEM</span>
+                    <div className="flex items-center gap-2">
+                      <span className="font-black text-sm text-white uppercase tracking-tight font-heading">
+                        ลูกค้า WALK-IN หน้าร้าน?
+                      </span>
+                      <span className="px-2 py-0.5 rounded-full bg-[#FACC15] text-black text-[9px] font-black uppercase tracking-wider">
+                        ด่วนทันที
+                      </span>
                     </div>
-                    <h2 className="text-xl font-black text-white tracking-tight font-heading uppercase">
-                      CHOOSE BARBER & BOOK NOW
-                    </h2>
-                    <p className="text-xs text-gray-400 mt-1.5 leading-relaxed font-medium">
-                      3 ช่างยอดฝีมือ 3 สไตล์ พร้อมระบบล็อคคิวแม่นยำ ไม่ต้องนั่งรอคิวนาน
+                    <p className="text-xs text-gray-300 mt-0.5 font-medium">
+                      ลูกค้ามาถึงร้านแล้ว ลงคิวหน้าร้าน หรือเริ่มตัดได้ทันทีใน 10 วินาที
                     </p>
                   </div>
                 </div>
-
-                {/* Live Stats Pills */}
-                <div className="mt-4 pt-3.5 border-t border-white/5 grid grid-cols-3 gap-2 text-center text-xs">
-                  <div className="bg-[#0A0A0B] p-2.5 rounded-2xl border border-white/5">
-                    <span className="text-[10px] text-gray-400 font-bold uppercase block">PRO BARBERS</span>
-                    <span className="font-black text-[#FACC15] text-sm font-heading">3 MASTERS</span>
-                  </div>
-                  <div className="bg-[#0A0A0B] p-2.5 rounded-2xl border border-white/5">
-                    <span className="text-[10px] text-gray-400 font-bold uppercase block">TODAY QUEUES</span>
-                    <span className="font-black text-white text-sm font-heading">
-                      {totalActiveBookingsToday} PASS
-                    </span>
-                  </div>
-                  <div className="bg-[#0A0A0B] p-2.5 rounded-2xl border border-white/5">
-                    <span className="text-[10px] text-gray-400 font-bold uppercase block">HOURS</span>
-                    <span className="font-black text-emerald-400 text-sm font-heading">10:00-20:00</span>
-                  </div>
-                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsQuickWalkInOpen(true)}
+                  className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#FACC15] to-[#EAB308] hover:from-[#FDE047] hover:to-[#FACC15] text-black font-black text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 shadow-md transition-all active:scale-95 shrink-0 cursor-pointer"
+                >
+                  <Plus className="w-4 h-4 stroke-[3]" />
+                  <span>+ เพิ่มคิว WALK-IN</span>
+                </button>
               </div>
 
               {/* Step 1: Barber Selection */}
@@ -713,6 +999,7 @@ export default function App() {
               onSelectBookingForTicket={(b) => setActiveTicketBooking(b)}
               onCancelBooking={handleCancelBooking}
               onGoToBooking={() => setActiveTab('book')}
+              onOpenDepositModal={(b) => setDepositModalState({ isOpen: true, booking: b })}
             />
           )}
 
@@ -723,6 +1010,21 @@ export default function App() {
               onUpdateStatus={handleUpdateBookingStatus}
               onOpenQuickWalkIn={() => setIsQuickWalkInOpen(true)}
               onSelectBookingForTicket={(b) => setActiveTicketBooking(b)}
+              onOpenDepositModal={(b) => setDepositModalState({ isOpen: true, booking: b })}
+              onOpenCheckoutModal={(b) => setCheckoutModalState({ isOpen: true, booking: b })}
+            />
+          )}
+
+          {activeTab === 'finance' && (
+            <FinanceAccountingView
+              bookings={bookings}
+              barbers={barbers}
+              expenses={expenses}
+              transactions={transactions}
+              onAddExpense={handleAddExpense}
+              onDeleteExpense={handleDeleteExpense}
+              onOpenDepositModal={(b) => setDepositModalState({ isOpen: true, booking: b })}
+              onOpenCheckoutModal={(b) => setCheckoutModalState({ isOpen: true, booking: b })}
             />
           )}
         </main>
@@ -769,7 +1071,28 @@ export default function App() {
         booking={activeTicketBooking}
         onClose={() => setActiveTicketBooking(null)}
         onCancelBooking={handleCancelBooking}
+        onOpenDepositModal={(b) => setDepositModalState({ isOpen: true, booking: b })}
         shopInfo={shopInfo}
+      />
+
+      {/* Deposit QR Payment Modal */}
+      <DepositPaymentModal
+        isOpen={depositModalState.isOpen}
+        onClose={() => setDepositModalState({ isOpen: false, booking: null })}
+        booking={depositModalState.booking}
+        shopInfo={shopInfo}
+        onConfirmDeposit={handleConfirmDepositPayment}
+        onUpdateShopInfo={handleUpdateShopInfo}
+      />
+
+      {/* Checkout & 50% Barber Commission Payment Modal */}
+      <CheckoutPaymentModal
+        isOpen={checkoutModalState.isOpen}
+        onClose={() => setCheckoutModalState({ isOpen: false, booking: null })}
+        booking={checkoutModalState.booking}
+        shopInfo={shopInfo}
+        onCompleteCheckout={handleCompleteCheckout}
+        onUpdateShopInfo={handleUpdateShopInfo}
       />
 
       {/* Shop Info Modal */}
@@ -789,7 +1112,8 @@ export default function App() {
         onClose={() => setIsQuickWalkInOpen(false)}
         barbers={barbers}
         services={services}
-        onAddBooking={createBooking}
+        bookings={bookings}
+        onAddBooking={handleCreateWalkIn}
       />
 
       {/* Barber Add/Edit Modal */}
@@ -826,6 +1150,7 @@ export default function App() {
         onShowToast={(msg, type) => setToast({ message: msg, type: type || 'info' })}
         onEditBarber={(barber) => setBarberModalState({ isOpen: true, barber })}
         onAddNewBarber={() => setBarberModalState({ isOpen: true, barber: null })}
+        initialTab={settingsInitialTab}
       />
 
       {/* Security PIN Authentication Modal */}
@@ -836,6 +1161,10 @@ export default function App() {
         correctPin={shopSettings.staffPin || '1234'}
         title={pinAuthModal.title}
         description={pinAuthModal.description}
+        onOpenChangePin={() => {
+          setSettingsInitialTab('security');
+          setIsSettingsOpen(true);
+        }}
       />
     </div>
   );

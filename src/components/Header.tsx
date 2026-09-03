@@ -1,16 +1,19 @@
 import React from 'react';
-import { Scissors, Calendar, Clock, MapPin, Phone, Users, ShieldCheck, Sparkles, Settings, Lock, Unlock } from 'lucide-react';
+import { Scissors, Calendar, Clock, MapPin, Phone, Users, ShieldCheck, Sparkles, Settings, Lock, Unlock, DollarSign, Zap, KeyRound } from 'lucide-react';
 import { ShopInfo } from '../types';
 
 interface HeaderProps {
-  activeTab: 'book' | 'my-bookings' | 'queue-board';
-  setActiveTab: (tab: 'book' | 'my-bookings' | 'queue-board') => void;
+  activeTab: 'book' | 'my-bookings' | 'queue-board' | 'finance';
+  setActiveTab: (tab: 'book' | 'my-bookings' | 'queue-board' | 'finance') => void;
   onOpenShopInfo: () => void;
   onOpenSettings: () => void;
+  onOpenQuickWalkIn?: () => void;
   totalActiveBookingsToday: number;
   shopInfo: ShopInfo;
   isAdminUnlocked?: boolean;
   onToggleAdminLock?: () => void;
+  staffPin?: string;
+  onOpenSecuritySettings?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -18,10 +21,13 @@ export const Header: React.FC<HeaderProps> = ({
   setActiveTab,
   onOpenShopInfo,
   onOpenSettings,
+  onOpenQuickWalkIn,
   totalActiveBookingsToday,
   shopInfo,
   isAdminUnlocked = false,
-  onToggleAdminLock
+  onToggleAdminLock,
+  staffPin = '1234',
+  onOpenSecuritySettings
 }) => {
   return (
     <header className="sticky top-0 z-30 bg-[#0A0A0B]/95 backdrop-blur-md border-b border-white/10 shadow-2xl">
@@ -34,30 +40,45 @@ export const Header: React.FC<HeaderProps> = ({
           </span>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
           {onToggleAdminLock && (
-            <button
-              type="button"
-              onClick={onToggleAdminLock}
-              className={`flex items-center gap-1 text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full transition-all cursor-pointer ${
-                isAdminUnlocked
-                  ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 hover:bg-emerald-500/30'
-                  : 'bg-white/5 text-gray-400 border border-white/10 hover:text-white hover:border-white/20'
-              }`}
-              title={isAdminUnlocked ? 'คลิกเพื่อล็อกโหมดแก้ไข (Lock Admin)' : 'คลิกเพื่อใส่รหัสปลดล็อกโหมดแก้ไข'}
-            >
-              {isAdminUnlocked ? (
-                <>
-                  <Unlock className="w-3 h-3 text-emerald-400" />
-                  <span>ADMIN UNLOCKED</span>
-                </>
-              ) : (
-                <>
-                  <Lock className="w-3 h-3 text-gray-400" />
-                  <span>LOCKED (PIN: 1234)</span>
-                </>
+            <div className="flex items-center gap-1.5">
+              <button
+                type="button"
+                onClick={onToggleAdminLock}
+                className={`flex items-center gap-1 text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full transition-all cursor-pointer ${
+                  isAdminUnlocked
+                    ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 hover:bg-emerald-500/30'
+                    : 'bg-white/5 text-gray-400 border border-white/10 hover:text-white hover:border-white/20'
+                }`}
+                title={isAdminUnlocked ? 'คลิกเพื่อล็อกโหมดแก้ไข (Lock Admin)' : 'คลิกเพื่อใส่รหัสปลดล็อกโหมดแก้ไข'}
+              >
+                {isAdminUnlocked ? (
+                  <>
+                    <Unlock className="w-3 h-3 text-emerald-400" />
+                    <span>ADMIN UNLOCKED</span>
+                  </>
+                ) : (
+                  <>
+                    <Lock className="w-3 h-3 text-gray-400" />
+                    <span>LOCKED</span>
+                  </>
+                )}
+              </button>
+
+              {/* Direct button to change PIN in Settings */}
+              {onOpenSecuritySettings && (
+                <button
+                  type="button"
+                  onClick={onOpenSecuritySettings}
+                  className="flex items-center gap-1 text-[10px] font-bold text-[#FACC15] hover:text-yellow-300 bg-[#FACC15]/10 hover:bg-[#FACC15]/20 border border-[#FACC15]/30 px-2 py-0.5 rounded-full transition-all cursor-pointer active:scale-95"
+                  title="เปลี่ยนรหัส PIN (อยู่ในตั้งค่า)"
+                >
+                  <KeyRound className="w-2.5 h-2.5" />
+                  <span>เปลี่ยนรหัส</span>
+                </button>
               )}
-            </button>
+            </div>
           )}
 
           <button
@@ -101,6 +122,18 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
 
         <div className="flex items-center gap-2">
+          {onOpenQuickWalkIn && (
+            <button
+              type="button"
+              onClick={onOpenQuickWalkIn}
+              className="h-10 px-3 rounded-xl bg-gradient-to-r from-[#FACC15] to-[#EAB308] hover:from-[#FDE047] hover:to-[#FACC15] text-black font-black text-xs uppercase tracking-wider flex items-center gap-1.5 shadow-md transition-all cursor-pointer active:scale-95 shrink-0"
+              title="เพิ่มคิว Walk-in หน้าร้าน"
+            >
+              <Zap className="w-4 h-4 fill-black stroke-black" />
+              <span className="font-heading">+ Walk-in</span>
+            </button>
+          )}
+
           <button
             type="button"
             onClick={onOpenSettings}
@@ -122,49 +155,61 @@ export const Header: React.FC<HeaderProps> = ({
       </div>
 
       {/* Navigation Segment Tabs */}
-      <div className="max-w-md mx-auto px-3 pb-3">
-        <div className="grid grid-cols-3 gap-1.5 bg-[#121418] p-1.5 rounded-2xl border border-white/10 text-xs">
+      <div className="max-w-md mx-auto px-2.5 pb-2.5">
+        <div className="grid grid-cols-4 gap-1 bg-[#121418] p-1 rounded-2xl border border-white/10 text-xs">
           <button
             onClick={() => setActiveTab('book')}
-            className={`py-2 px-1 rounded-xl font-bold uppercase text-[11px] tracking-wider transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+            className={`py-2 px-1 rounded-xl font-bold uppercase text-[10px] sm:text-[11px] tracking-tight transition-all flex flex-col sm:flex-row items-center justify-center gap-1 cursor-pointer ${
               activeTab === 'book'
                 ? 'bg-[#FACC15] text-black shadow-lg font-black'
                 : 'text-gray-400 hover:text-white hover:bg-[#1C1F26]'
             }`}
           >
             <Scissors className="w-3.5 h-3.5" />
-            <span>จองคิวใหม่</span>
+            <span className="whitespace-nowrap">จองคิว</span>
           </button>
 
           <button
             onClick={() => setActiveTab('my-bookings')}
-            className={`py-2 px-1 rounded-xl font-bold uppercase text-[11px] tracking-wider transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+            className={`py-2 px-1 rounded-xl font-bold uppercase text-[10px] sm:text-[11px] tracking-tight transition-all flex flex-col sm:flex-row items-center justify-center gap-1 cursor-pointer ${
               activeTab === 'my-bookings'
                 ? 'bg-[#FACC15] text-black shadow-lg font-black'
                 : 'text-gray-400 hover:text-white hover:bg-[#1C1F26]'
             }`}
           >
             <Calendar className="w-3.5 h-3.5" />
-            <span>เช็คคิว</span>
+            <span className="whitespace-nowrap">เช็คคิว</span>
           </button>
 
           <button
             onClick={() => setActiveTab('queue-board')}
-            className={`py-2 px-1 rounded-xl font-bold uppercase text-[11px] tracking-wider transition-all flex items-center justify-center gap-1.5 cursor-pointer relative ${
+            className={`py-2 px-1 rounded-xl font-bold uppercase text-[10px] sm:text-[11px] tracking-tight transition-all flex flex-col sm:flex-row items-center justify-center gap-1 cursor-pointer relative ${
               activeTab === 'queue-board'
                 ? 'bg-[#FACC15] text-black shadow-lg font-black'
                 : 'text-gray-400 hover:text-white hover:bg-[#1C1F26]'
             }`}
           >
             <Users className="w-3.5 h-3.5" />
-            <span>คิวช่าง</span>
+            <span className="whitespace-nowrap">คิวช่าง</span>
             {totalActiveBookingsToday > 0 && (
-              <span className={`px-1.5 py-0.2 rounded-full text-[9px] font-black ${
+              <span className={`px-1 py-0.1 rounded-full text-[8px] font-black ${
                 activeTab === 'queue-board' ? 'bg-black text-[#FACC15]' : 'bg-[#FACC15] text-black'
               }`}>
                 {totalActiveBookingsToday}
               </span>
             )}
+          </button>
+
+          <button
+            onClick={() => setActiveTab('finance')}
+            className={`py-2 px-1 rounded-xl font-bold uppercase text-[10px] sm:text-[11px] tracking-tight transition-all flex flex-col sm:flex-row items-center justify-center gap-1 cursor-pointer ${
+              activeTab === 'finance'
+                ? 'bg-[#FACC15] text-black shadow-lg font-black'
+                : 'text-gray-400 hover:text-white hover:bg-[#1C1F26]'
+            }`}
+          >
+            <DollarSign className="w-3.5 h-3.5" />
+            <span className="whitespace-nowrap">การเงิน/คอม</span>
           </button>
         </div>
       </div>

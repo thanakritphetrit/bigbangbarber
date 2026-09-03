@@ -25,6 +25,7 @@ interface BookingTicketModalProps {
   booking: Booking | null;
   onClose: () => void;
   onCancelBooking?: (bookingId: string) => void;
+  onOpenDepositModal?: (booking: Booking) => void;
   shopInfo?: ShopInfo;
 }
 
@@ -32,6 +33,7 @@ export const BookingTicketModal: React.FC<BookingTicketModalProps> = ({
   booking,
   onClose,
   onCancelBooking,
+  onOpenDepositModal,
   shopInfo = DEFAULT_SHOP_INFO
 }) => {
   useEffect(() => {
@@ -139,9 +141,15 @@ export const BookingTicketModal: React.FC<BookingTicketModalProps> = ({
                 <Copy className="w-4 h-4" />
               </button>
             </div>
-            <span className="inline-block mt-2 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-500/20 text-emerald-400 border border-emerald-500/40">
-              STATUS: CONFIRMED
-            </span>
+            {booking.isWalkIn ? (
+              <span className="inline-block mt-2 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-[#FACC15]/20 text-[#FACC15] border border-[#FACC15]/40">
+                🚶 WALK-IN TICKET ({booking.status === 'in_progress' ? 'กำลังตัดผม' : 'รอคิวหน้าร้าน'})
+              </span>
+            ) : (
+              <span className="inline-block mt-2 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-500/20 text-emerald-400 border border-emerald-500/40">
+                STATUS: CONFIRMED
+              </span>
+            )}
           </div>
 
           {/* Details Grid */}
@@ -195,12 +203,45 @@ export const BookingTicketModal: React.FC<BookingTicketModalProps> = ({
               </div>
             )}
 
-            {/* Total Price */}
-            <div className="flex items-center justify-between pt-2">
-              <span className="text-gray-400 font-black uppercase">PRICE DUE:</span>
-              <span className="text-xl font-black text-[#FACC15] font-heading">
-                ฿{booking.servicePrice.toLocaleString()}
-              </span>
+            {/* Total Price & Deposit Breakdown */}
+            <div className="pt-2 border-t border-white/5 space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-gray-400 font-bold uppercase text-[11px]">ค่าบริการรวม:</span>
+                <span className="text-base font-black text-white font-heading">
+                  ฿{booking.servicePrice.toLocaleString()}
+                </span>
+              </div>
+
+              <div className="flex items-center justify-between text-[11px]">
+                <span className="text-gray-400 font-bold uppercase">สถานะเงินมัดจำ (฿{booking.depositAmount || 100}):</span>
+                {booking.depositPaid ? (
+                  <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 font-bold text-[10px] border border-emerald-500/30">
+                    ✓ ชำระมัดจำแล้ว
+                  </span>
+                ) : (
+                  <span className="px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-400 font-bold text-[10px] border border-amber-500/30">
+                    ยังไม่ได้ชำระมัดจำ
+                  </span>
+                )}
+              </div>
+
+              <div className="flex items-center justify-between pt-1 border-t border-white/5">
+                <span className="text-gray-400 font-black uppercase">คงเหลือชำระที่ร้าน:</span>
+                <span className="text-xl font-black text-[#FACC15] font-heading">
+                  ฿{Math.max(0, booking.servicePrice - (booking.depositPaid ? (booking.depositAmount || 100) : 0)).toLocaleString()}
+                </span>
+              </div>
+
+              {!booking.depositPaid && onOpenDepositModal && (
+                <button
+                  type="button"
+                  onClick={() => onOpenDepositModal(booking)}
+                  className="w-full mt-2 py-2.5 px-3 rounded-xl bg-gradient-to-r from-[#FACC15] to-[#EAB308] hover:from-[#FDE047] hover:to-[#FACC15] text-black font-black uppercase tracking-wider text-xs flex items-center justify-center gap-2 shadow-md cursor-pointer transition-all active:scale-98"
+                >
+                  <QrCode className="w-4 h-4" />
+                  <span>สแกน QR ชำระมัดจำทันที (฿{booking.depositAmount || 100})</span>
+                </button>
+              )}
             </div>
           </div>
 
