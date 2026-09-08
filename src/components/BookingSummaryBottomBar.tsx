@@ -38,15 +38,15 @@ export const BookingSummaryBottomBar: React.FC<BookingSummaryBottomBarProps> = (
           </div>
           <div className="flex items-baseline gap-2 mt-0.5">
             <span className="text-2xl font-black text-[#FACC15] font-heading">
-              ฿{servicePrice.toLocaleString()}
+              ฿{(servicePrice || 0).toLocaleString()}
             </span>
             <span className="text-xs font-bold uppercase text-gray-400 truncate max-w-[130px]">
               {serviceName}
             </span>
           </div>
-          {servicePrice > 0 && (
+          {(servicePrice || 0) > 0 && (
             <div className="text-[10px] text-emerald-400 font-bold mt-0.5">
-              <span>มัดจำ ฿{depositAmount} (ชำระหน้าร้าน ฿{Math.max(0, servicePrice - depositAmount)})</span>
+              <span>มัดจำ ฿{depositAmount} (ชำระหน้าร้าน ฿{Math.max(0, (servicePrice || 0) - depositAmount)})</span>
             </div>
           )}
         </div>
@@ -66,11 +66,11 @@ export const BookingSummaryBottomBar: React.FC<BookingSummaryBottomBarProps> = (
             {isSubmitting ? (
               <>
                 <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
-                <span>SAVING...</span>
+                <span>กำลังบันทึกคิว...</span>
               </>
             ) : (
               <>
-                <span>CONFIRM QUEUE</span>
+                <span>ยืนยันจองคิว</span>
                 <ArrowRight className="w-4 h-4 stroke-[3]" />
               </>
             )}

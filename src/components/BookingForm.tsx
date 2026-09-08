@@ -26,15 +26,16 @@ export const BookingForm: React.FC<BookingFormProps> = ({
 
   return (
     <div className="space-y-3.5">
-      <div className="flex justify-between items-end">
-        <h3 className="text-lg sm:text-xl font-black uppercase tracking-tight font-heading flex items-center gap-2">
+      <div className="flex justify-between items-end flex-wrap gap-2">
+        <h3 className="text-lg sm:text-xl font-black tracking-tight font-heading flex items-center gap-2">
           <span className="w-6 h-6 rounded-lg bg-[#FACC15] text-black text-xs flex items-center justify-center font-black">
             5
           </span>
-          <span>Customer Information</span>
+          <span>ข้อมูลผู้จองคิว</span>
+          <span className="text-xs text-gray-400 font-normal uppercase tracking-wider hidden sm:inline-block">Customer Info</span>
         </h3>
-        <span className="text-xs text-[#FACC15] uppercase font-bold tracking-wider">
-          Direct Sync
+        <span className="text-xs text-[#FACC15] font-semibold tracking-tight">
+          จองง่าย ไม่ต้องสมัครสมาชิก
         </span>
       </div>
 

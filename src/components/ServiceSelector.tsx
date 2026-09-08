@@ -63,11 +63,12 @@ export const ServiceSelector: React.FC<ServiceSelectorProps> = ({
     <div className="space-y-3.5">
       {/* Section Header */}
       <div className="flex justify-between items-center flex-wrap gap-2">
-        <h3 className="text-lg sm:text-xl font-black uppercase tracking-tight font-heading flex items-center gap-2">
+        <h3 className="text-lg sm:text-xl font-black tracking-tight font-heading flex items-center gap-2">
           <span className="w-6 h-6 rounded-lg bg-[#FACC15] text-black text-xs flex items-center justify-center font-black">
             2
           </span>
-          <span>SELECT SERVICE</span>
+          <span>เลือกบริการ / ทรงผม</span>
+          <span className="text-xs text-gray-400 font-normal uppercase tracking-wider hidden sm:inline-block">Select Service</span>
         </h3>
 
         <div className="flex items-center gap-2">
@@ -82,8 +83,8 @@ export const ServiceSelector: React.FC<ServiceSelectorProps> = ({
             </button>
           )}
 
-          <span className="text-xs text-gray-400 uppercase font-bold tracking-wider hidden sm:inline-block">
-            Standard Menu ({services.length})
+          <span className="text-xs text-gray-400 font-bold uppercase tracking-wider hidden sm:inline-block">
+            เมนูบริการ ({services.length})
           </span>
         </div>
       </div>
@@ -155,7 +156,7 @@ export const ServiceSelector: React.FC<ServiceSelectorProps> = ({
                     <span className={`font-black text-base font-heading ${
                       isSelected ? 'text-black' : 'text-[#FACC15]'
                     }`}>
-                      ฿{service.price.toLocaleString()}
+                      ฿{(service.price || 0).toLocaleString()}
                     </span>
                   </div>
                 </div>

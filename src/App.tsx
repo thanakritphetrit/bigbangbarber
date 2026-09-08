@@ -97,7 +97,22 @@ export default function App() {
   const [barbers, setBarbers] = useState<Barber[]>(() => {
     try {
       const saved = localStorage.getItem('bbb_barbers');
-      if (saved) return JSON.parse(saved);
+      if (saved) {
+        const parsed: Barber[] = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed.map(b => {
+            const match = INITIAL_BARBERS.find(init => init.id === b.id);
+            return {
+              ...(match || {}),
+              ...b,
+              specialties: b.specialties || match?.specialties || ['Classic Cut', 'Fade'],
+              commissionRate: b.commissionRate || 50,
+              avatar: (match && (!b.avatar || b.avatar.includes('unsplash.com'))) ? match.avatar : (b.avatar || '/barber_ek.jpg'),
+              coverImage: (match && (!b.coverImage || b.coverImage.includes('unsplash.com'))) ? match.coverImage : (b.coverImage || '/shop_hero.jpg')
+            };
+          });
+        }
+      }
     } catch {
       // fallback
     }
@@ -106,7 +121,10 @@ export default function App() {
   const [services, setServices] = useState<BarberService[]>(() => {
     try {
       const saved = localStorage.getItem('bbb_services');
-      if (saved) return JSON.parse(saved);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
     } catch {
       // fallback
     }
@@ -120,7 +138,16 @@ export default function App() {
   const [shopInfo, setShopInfo] = useState<ShopInfo>(() => {
     try {
       const saved = localStorage.getItem('bbb_shop_info');
-      if (saved) return JSON.parse(saved);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        return {
+          ...SHOP_INFO,
+          ...parsed,
+          defaultCommissionRate: parsed.defaultCommissionRate ?? SHOP_INFO.defaultCommissionRate ?? 50,
+          defaultDepositAmount: parsed.defaultDepositAmount ?? SHOP_INFO.defaultDepositAmount ?? 100,
+          logoUrl: parsed.logoUrl || '/logo.jpg'
+        };
+      }
     } catch {
       // fallback
     }
@@ -309,7 +336,7 @@ export default function App() {
   const [isShopInfoOpen, setIsShopInfoOpen] = useState<boolean>(false);
   const [isQuickWalkInOpen, setIsQuickWalkInOpen] = useState<boolean>(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState<boolean>(false);
-  const [settingsInitialTab, setSettingsInitialTab] = useState<'shop' | 'barbers' | 'sound' | 'database' | 'security'>('shop');
+  const [settingsInitialTab, setSettingsInitialTab] = useState<'shop' | 'qr' | 'barbers' | 'sound' | 'database' | 'security'>('shop');
   const [barberModalState, setBarberModalState] = useState<{
     isOpen: boolean;
     barber: Barber | null;
@@ -406,10 +433,39 @@ export default function App() {
       setTransactions(updatedTransactions);
     });
 
+    // Subscribe to shop info updates
+    const unsubscribeShopInfo = subscribeToShopInfo((updatedInfo) => {
+      setShopInfo((prev) => ({
+        ...SHOP_INFO,
+        ...prev,
+        ...updatedInfo,
+        defaultCommissionRate: updatedInfo.defaultCommissionRate ?? prev.defaultCommissionRate ?? SHOP_INFO.defaultCommissionRate ?? 50,
+        defaultDepositAmount: updatedInfo.defaultDepositAmount ?? prev.defaultDepositAmount ?? SHOP_INFO.defaultDepositAmount ?? 100,
+        logoUrl: updatedInfo.logoUrl || '/logo.jpg'
+      }));
+    });
+
+    // Subscribe to barbers updates
+    const unsubscribeBarbers = subscribeToBarbers((updatedBarbers) => {
+      if (updatedBarbers && updatedBarbers.length > 0) {
+        setBarbers(updatedBarbers);
+      }
+    });
+
+    // Subscribe to services updates
+    const unsubscribeServices = subscribeToServices((updatedServices) => {
+      if (updatedServices && updatedServices.length > 0) {
+        setServices(updatedServices);
+      }
+    });
+
     return () => {
       unsubscribeBookings();
       unsubscribeExpenses();
       unsubscribeTransactions();
+      unsubscribeShopInfo();
+      unsubscribeBarbers();
+      unsubscribeServices();
     };
   }, []);
 
@@ -875,6 +931,10 @@ export default function App() {
             setSettingsInitialTab('security');
             setIsSettingsOpen(true);
           }}
+          onOpenQrSettings={() => {
+            setSettingsInitialTab('qr');
+            setIsSettingsOpen(true);
+          }}
         />
 
         {/* Main Content Area */}
@@ -941,6 +1001,65 @@ export default function App() {
                   <Plus className="w-4 h-4 stroke-[3]" />
                   <span>+ เพิ่มคิว WALK-IN</span>
                 </button>
+              </div>
+
+              {/* Studio Visual Showcase Banner */}
+              <div className="relative rounded-3xl overflow-hidden border border-white/10 shadow-xl bg-[#121418] group">
+                <div className="h-40 sm:h-48 w-full relative overflow-hidden">
+                  <img
+                    src="/shop_hero.jpg"
+                    alt="Big Bang Barber Shop Interior"
+                    referrerPolicy="no-referrer"
+                    className="w-full h-full object-cover object-center transform group-hover:scale-105 transition-transform duration-700"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#0A0A0B] via-[#0A0A0B]/40 to-transparent" />
+                  
+                  <div className="absolute top-3 left-3 flex items-center gap-2">
+                    <span className="bg-black/75 backdrop-blur-md px-3 py-1 rounded-full border border-white/10 flex items-center gap-1.5 text-[10px] text-[#FACC15] font-black uppercase tracking-wider">
+                      <Sparkles className="w-3 h-3 text-[#FACC15]" />
+                      <span>PREMIUM GENTLEMEN SALON</span>
+                    </span>
+                  </div>
+
+                  <div className="absolute top-3 right-3">
+                    <button
+                      type="button"
+                      onClick={() => setIsShopInfoOpen(true)}
+                      className="px-3 py-1 rounded-full bg-black/75 hover:bg-black backdrop-blur-md border border-white/15 text-white text-[11px] font-bold cursor-pointer transition-all active:scale-95"
+                    >
+                      ดูข้อมูลร้าน & แผนที่
+                    </button>
+                  </div>
+                </div>
+
+                <div className="p-4 -mt-6 relative z-10 space-y-2">
+                  <div className="flex items-center justify-between gap-3">
+                    <div>
+                      <h2 className="text-xl font-black text-white uppercase italic tracking-tight font-heading flex items-center gap-2">
+                        <span>{shopInfo.name}</span>
+                        <span className="text-[#FACC15] text-[11px] not-italic font-bold px-2 py-0.5 rounded-md bg-[#FACC15]/10 border border-[#FACC15]/30">
+                          ทองหล่อ ซอย 55
+                        </span>
+                      </h2>
+                      <p className="text-xs text-gray-400 font-medium line-clamp-1 mt-0.5">
+                        {shopInfo.tagline} • ทีมช่างมืออาชีพ {barbers.length} ท่าน พร้อมบริการ
+                      </p>
+                    </div>
+
+                    {/* Barber Avatars Thumbnail Group */}
+                    <div className="flex -space-x-2 shrink-0">
+                      {barbers.slice(0, 3).map((b) => (
+                        <img
+                          key={b.id}
+                          src={b.avatar || '/barber_ek.jpg'}
+                          alt={b.name}
+                          referrerPolicy="no-referrer"
+                          className="w-8 h-8 rounded-full object-cover border-2 border-[#121418] shadow-md"
+                        />
+                      ))}
+                    </div>
+                  </div>
+                </div>
               </div>
 
               {/* Step 1: Barber Selection */}
@@ -1021,6 +1140,7 @@ export default function App() {
               barbers={barbers}
               expenses={expenses}
               transactions={transactions}
+              shopInfo={shopInfo}
               onAddExpense={handleAddExpense}
               onDeleteExpense={handleDeleteExpense}
               onOpenDepositModal={(b) => setDepositModalState({ isOpen: true, booking: b })}
@@ -1151,6 +1271,8 @@ export default function App() {
         onEditBarber={(barber) => setBarberModalState({ isOpen: true, barber })}
         onAddNewBarber={() => setBarberModalState({ isOpen: true, barber: null })}
         initialTab={settingsInitialTab}
+        shopInfo={shopInfo}
+        onUpdateShopInfo={handleUpdateShopInfo}
       />
 
       {/* Security PIN Authentication Modal */}

@@ -9,8 +9,8 @@ interface BarberDetailModalProps {
   onEditBarber?: (barber: Barber) => void;
 }
 
-const FALLBACK_AVATAR = 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=500&auto=format&fit=crop&q=80';
-const FALLBACK_COVER = 'https://images.unsplash.com/photo-1585747860715-2ba37e788b70?w=800&auto=format&fit=crop&q=80';
+const FALLBACK_AVATAR = '/barber_ek.jpg';
+const FALLBACK_COVER = '/shop_hero.jpg';
 
 export const BarberDetailModal: React.FC<BarberDetailModalProps> = ({
   barber,
@@ -22,10 +22,10 @@ export const BarberDetailModal: React.FC<BarberDetailModalProps> = ({
 
   // Sample portfolio style photos for this barber
   const portfolioPhotos = [
-    'https://images.unsplash.com/photo-1599351431202-1e0f0137899a?w=400&auto=format&fit=crop&q=80',
-    'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?w=400&auto=format&fit=crop&q=80',
-    'https://images.unsplash.com/photo-1622286342621-4bd786c2447c?w=400&auto=format&fit=crop&q=80',
-    'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=400&auto=format&fit=crop&q=80'
+    '/barber_ek.jpg',
+    '/barber_boss.jpg',
+    '/barber_jack.jpg',
+    '/shop_hero.jpg'
   ];
 
   return (
@@ -127,7 +127,7 @@ export const BarberDetailModal: React.FC<BarberDetailModalProps> = ({
               <span>SPECIALTIES & SKILLS</span>
             </h4>
             <div className="flex flex-wrap gap-1.5">
-              {barber.specialties.map((item, idx) => (
+              {(barber.specialties || []).map((item, idx) => (
                 <span
                   key={idx}
                   className="text-xs px-3 py-1 rounded-xl bg-[#0A0A0B] text-white border border-white/10 font-bold flex items-center gap-1.5"

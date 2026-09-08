@@ -11,7 +11,7 @@ interface BarberSelectorProps {
   onAddNewBarber?: () => void;
 }
 
-const FALLBACK_AVATAR = 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=500&auto=format&fit=crop&q=80';
+const FALLBACK_AVATAR = '/barber_ek.jpg';
 
 export const BarberSelector: React.FC<BarberSelectorProps> = ({
   barbers,
@@ -24,11 +24,12 @@ export const BarberSelector: React.FC<BarberSelectorProps> = ({
   return (
     <div className="space-y-3.5">
       <div className="flex justify-between items-center flex-wrap gap-2">
-        <h3 className="text-lg sm:text-xl font-black uppercase tracking-tight font-heading flex items-center gap-2">
+        <h3 className="text-lg sm:text-xl font-black tracking-tight font-heading flex items-center gap-2">
           <span className="w-6 h-6 rounded-lg bg-[#FACC15] text-black text-xs flex items-center justify-center font-black">
             1
           </span>
-          <span>SELECT BARBER</span>
+          <span>เลือกช่างตัดผม</span>
+          <span className="text-xs text-gray-400 font-normal uppercase tracking-wider hidden sm:inline-block">Select Barber</span>
         </h3>
 
         <div className="flex items-center gap-2">
@@ -44,7 +45,7 @@ export const BarberSelector: React.FC<BarberSelectorProps> = ({
           )}
 
           <span className="text-xs text-[#FACC15] uppercase font-bold tracking-wider hidden sm:inline-block">
-            Available ({barbers.length})
+            ช่างในระบบ ({barbers.length})
           </span>
         </div>
       </div>
@@ -161,7 +162,7 @@ export const BarberSelector: React.FC<BarberSelectorProps> = ({
 
                   {/* Specialties */}
                   <div className="flex flex-wrap gap-1 mt-2">
-                    {barber.specialties.slice(0, 2).map((item, idx) => (
+                    {(barber.specialties || []).slice(0, 2).map((item, idx) => (
                       <span
                         key={idx}
                         className={`text-[10px] px-2 py-0.5 rounded-md font-bold uppercase tracking-wider ${

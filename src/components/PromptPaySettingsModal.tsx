@@ -16,12 +16,13 @@ import {
   AlertCircle
 } from 'lucide-react';
 import { ShopInfo } from '../types';
+import { SHOP_INFO } from '../data/mockData';
 import { generatePromptPayQRDataUrl } from '../utils/promptpay';
 
 interface PromptPaySettingsModalProps {
   isOpen: boolean;
   onClose: () => void;
-  shopInfo: ShopInfo;
+  shopInfo?: ShopInfo;
   onSave: (updated: ShopInfo) => Promise<void> | void;
   sampleAmount?: number;
 }
@@ -45,11 +46,11 @@ export const PromptPaySettingsModal: React.FC<PromptPaySettingsModalProps> = ({
   onSave,
   sampleAmount = 450
 }) => {
-  const [promptPayNumber, setPromptPayNumber] = useState(shopInfo.promptPayNumber || shopInfo.phone || '089-765-4321');
-  const [promptPayName, setPromptPayName] = useState(shopInfo.promptPayName || shopInfo.name || 'บิ๊กแบง บาร์เบอร์ (BIGBANG BARBER)');
-  const [promptPayBank, setPromptPayBank] = useState(shopInfo.promptPayBank || COMMON_BANKS[0]);
-  const [promptPayMode, setPromptPayMode] = useState<'auto_generate' | 'custom_image'>(shopInfo.promptPayMode || 'auto_generate');
-  const [promptPayQrImageUrl, setPromptPayQrImageUrl] = useState(shopInfo.promptPayQrImageUrl || '');
+  const [promptPayNumber, setPromptPayNumber] = useState(shopInfo?.promptPayNumber || shopInfo?.phone || '089-765-4321');
+  const [promptPayName, setPromptPayName] = useState(shopInfo?.promptPayName || shopInfo?.name || 'บิ๊กแบง บาร์เบอร์ (BIGBANG BARBER)');
+  const [promptPayBank, setPromptPayBank] = useState(shopInfo?.promptPayBank || COMMON_BANKS[0]);
+  const [promptPayMode, setPromptPayMode] = useState<'auto_generate' | 'custom_image'>(shopInfo?.promptPayMode || 'auto_generate');
+  const [promptPayQrImageUrl, setPromptPayQrImageUrl] = useState(shopInfo?.promptPayQrImageUrl || '');
   
   const [previewQrUrl, setPreviewQrUrl] = useState<string>('');
   const [isSaving, setIsSaving] = useState(false);
@@ -59,11 +60,11 @@ export const PromptPaySettingsModal: React.FC<PromptPaySettingsModalProps> = ({
   // Sync state when modal opens
   useEffect(() => {
     if (isOpen) {
-      setPromptPayNumber(shopInfo.promptPayNumber || shopInfo.phone || '089-765-4321');
-      setPromptPayName(shopInfo.promptPayName || shopInfo.name || 'บิ๊กแบง บาร์เบอร์ (BIGBANG BARBER)');
-      setPromptPayBank(shopInfo.promptPayBank || COMMON_BANKS[0]);
-      setPromptPayMode(shopInfo.promptPayMode || 'auto_generate');
-      setPromptPayQrImageUrl(shopInfo.promptPayQrImageUrl || '');
+      setPromptPayNumber(shopInfo?.promptPayNumber || shopInfo?.phone || '089-765-4321');
+      setPromptPayName(shopInfo?.promptPayName || shopInfo?.name || 'บิ๊กแบง บาร์เบอร์ (BIGBANG BARBER)');
+      setPromptPayBank(shopInfo?.promptPayBank || COMMON_BANKS[0]);
+      setPromptPayMode(shopInfo?.promptPayMode || 'auto_generate');
+      setPromptPayQrImageUrl(shopInfo?.promptPayQrImageUrl || '');
       setSaveSuccess(false);
     }
   }, [isOpen, shopInfo]);
@@ -121,7 +122,8 @@ export const PromptPaySettingsModal: React.FC<PromptPaySettingsModalProps> = ({
     setIsSaving(true);
     try {
       const updated: ShopInfo = {
-        ...shopInfo,
+        ...SHOP_INFO,
+        ...(shopInfo || {}),
         promptPayNumber: promptPayNumber.trim(),
         promptPayName: promptPayName.trim(),
         promptPayBank: promptPayBank.trim(),

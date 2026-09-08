@@ -90,22 +90,23 @@ export const TimeSlotSelector: React.FC<TimeSlotSelectorProps> = ({
 
   return (
     <div className="space-y-3.5 bg-[#121418] rounded-3xl p-5 border border-white/10 shadow-xl">
-      <div className="flex justify-between items-center">
-        <h3 className="text-lg sm:text-xl font-black uppercase tracking-tight font-heading flex items-center gap-2">
+      <div className="flex justify-between items-center flex-wrap gap-2">
+        <h3 className="text-lg sm:text-xl font-black tracking-tight font-heading flex items-center gap-2">
           <span className="w-6 h-6 rounded-lg bg-[#FACC15] text-black text-xs flex items-center justify-center font-black">
             4
           </span>
-          <span>Available Slots</span>
+          <span>เลือกรอบเวลา</span>
+          <span className="text-xs text-gray-400 font-normal uppercase tracking-wider hidden sm:inline-block">Time Slots</span>
         </h3>
         
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-1.5">
             <div className="w-3 h-3 bg-white rounded-sm" />
-            <span className="text-[10px] text-gray-400 uppercase font-bold tracking-wider">Selected</span>
+            <span className="text-[10px] text-gray-300 font-medium">เลือกแล้ว</span>
           </div>
           <div className="flex items-center gap-1.5">
             <div className="w-3 h-3 bg-gray-800 rounded-sm" />
-            <span className="text-[10px] text-gray-400 uppercase font-bold tracking-wider">Booked</span>
+            <span className="text-[10px] text-gray-400 font-medium">เต็มแล้ว</span>
           </div>
         </div>
       </div>

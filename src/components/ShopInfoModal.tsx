@@ -55,10 +55,12 @@ export const ShopInfoModal: React.FC<ShopInfoModalProps> = ({
 
   // Sync form data when modal opens or shopInfo prop changes
   useEffect(() => {
-    setFormData(shopInfo);
+    if (shopInfo) {
+      setFormData(shopInfo);
+    }
     setIsEditing(false);
-    const cleanNumber = (shopInfo.promptPayNumber || shopInfo.phone || '089-765-4321').replace(/[^0-9]/g, '');
-    if (shopInfo.promptPayMode === 'custom_image' && shopInfo.promptPayQrImageUrl) {
+    const cleanNumber = (shopInfo?.promptPayNumber || shopInfo?.phone || '089-765-4321').replace(/[^0-9]/g, '');
+    if (shopInfo?.promptPayMode === 'custom_image' && shopInfo?.promptPayQrImageUrl) {
       setViewQrUrl(shopInfo.promptPayQrImageUrl);
     } else if (cleanNumber.length >= 9) {
       generatePromptPayQRDataUrl(cleanNumber, 100)
@@ -536,29 +538,44 @@ export const ShopInfoModal: React.FC<ShopInfoModalProps> = ({
             /* ================= VIEW MODE ================= */
             <>
               {/* Shop Logo & Visual Banner */}
-              <div className="bg-[#0A0A0B] p-4 rounded-2xl border border-white/5 flex items-center gap-4">
-                <div className="w-16 h-16 rounded-2xl overflow-hidden bg-[#1C1F26] border-2 border-[#FACC15]/40 flex items-center justify-center shrink-0 shadow-lg">
+              <div className="rounded-2xl overflow-hidden border border-white/10 relative bg-[#0A0A0B]">
+                <div className="h-32 w-full relative overflow-hidden">
                   <img 
-                    src={shopInfo.logoUrl || '/logo.jpg'} 
-                    alt={shopInfo.name || 'Big Bang Barber'} 
-                    className="w-full h-full object-cover object-center"
-                    onError={(e) => {
-                      (e.target as HTMLElement).style.display = 'none';
-                    }}
+                    src="/shop_hero.jpg" 
+                    alt="Shop Interior" 
+                    referrerPolicy="no-referrer"
+                    className="w-full h-full object-cover" 
                   />
-                  <span className="font-black text-2xl text-[#FACC15] absolute">BB</span>
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#0A0A0B] via-[#0A0A0B]/50 to-transparent" />
+                  <div className="absolute top-2.5 left-2.5 px-2.5 py-0.5 rounded-full bg-black/70 backdrop-blur-md border border-white/10 text-[9px] font-black uppercase text-[#FACC15]">
+                    Thonglor Studio
+                  </div>
                 </div>
-                <div>
-                  <h4 className="font-black text-lg text-white uppercase font-heading tracking-tight">
-                    {shopInfo.name || 'BIGBANG BARBER'}
-                  </h4>
-                  <p className="text-xs text-[#FACC15] font-bold uppercase tracking-wider">
-                    {shopInfo.tagline || 'THONGLOR • GENTLEMEN GROOMING'}
-                  </p>
-                  <span className="inline-flex items-center gap-1.5 mt-1 text-[10px] text-gray-400">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-                    <span>เชื่อมต่อระบบ Firebase Realtime</span>
-                  </span>
+                <div className="p-4 -mt-8 relative z-10 flex items-center gap-3.5">
+                  <div className="w-16 h-16 rounded-2xl overflow-hidden bg-[#1C1F26] border-2 border-[#FACC15] flex items-center justify-center shrink-0 shadow-2xl relative">
+                    <img 
+                      src={shopInfo.logoUrl || '/logo.jpg'} 
+                      alt={shopInfo.name || 'Big Bang Barber'} 
+                      referrerPolicy="no-referrer"
+                      className="w-full h-full object-cover object-center"
+                      onError={(e) => {
+                        (e.target as HTMLElement).style.display = 'none';
+                      }}
+                    />
+                    <span className="font-black text-2xl text-[#FACC15] absolute">BB</span>
+                  </div>
+                  <div>
+                    <h4 className="font-black text-lg text-white uppercase font-heading tracking-tight">
+                      {shopInfo.name || 'BIGBANG BARBER'}
+                    </h4>
+                    <p className="text-xs text-[#FACC15] font-bold uppercase tracking-wider">
+                      {shopInfo.tagline || 'THONGLOR • GENTLEMEN GROOMING'}
+                    </p>
+                    <span className="inline-flex items-center gap-1.5 mt-0.5 text-[10px] text-gray-400">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                      <span>สตูดิโอตัดผมระดับพรีเมียม สุขุมวิท 55 (ทองหล่อ)</span>
+                    </span>
+                  </div>
                 </div>
               </div>
 

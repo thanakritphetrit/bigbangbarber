@@ -74,11 +74,11 @@ export const QueueBoardView: React.FC<QueueBoardViewProps> = ({
           <div className="flex items-center gap-2.5">
             <Users className="w-6 h-6 text-[#FACC15]" />
             <div>
-              <h2 className="text-lg font-black uppercase tracking-tight text-white font-heading">
-                LIVE QUEUE BOARD ({barbers.length} BARBERS)
+              <h2 className="text-lg font-black tracking-tight text-white font-heading">
+                กระดานคิวสด ({barbers.length} ช่าง)
               </h2>
               <p className="text-xs text-gray-400 font-medium">
-                จัดการสถานะคิว อัปเดตงานตัดผม และตรวจดูคิวสด
+                จัดการสถานะคิว อัปเดตงานตัดผม และเช็คบิลรับเงิน
               </p>
             </div>
           </div>
@@ -96,25 +96,25 @@ export const QueueBoardView: React.FC<QueueBoardViewProps> = ({
         {/* Today Summary Metrics */}
         <div className="grid grid-cols-4 gap-2 text-center pt-1">
           <div className="bg-[#0A0A0B] p-3 rounded-2xl border border-white/5">
-            <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider block">TODAY</span>
+            <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider block">คิววันนี้</span>
             <span className="text-xl font-black text-white font-heading">
               {todayBookings.length}
             </span>
           </div>
           <div className="bg-[#0A0A0B] p-3 rounded-2xl border border-white/5">
-            <span className="text-[10px] text-[#FACC15] font-bold uppercase tracking-wider block">CUTTING</span>
+            <span className="text-[10px] text-[#FACC15] font-bold uppercase tracking-wider block">กำลังตัด</span>
             <span className="text-xl font-black text-[#FACC15] font-heading">
               {inProgressCount}
             </span>
           </div>
           <div className="bg-[#0A0A0B] p-3 rounded-2xl border border-white/5">
-            <span className="text-[10px] text-emerald-400 font-bold uppercase tracking-wider block">DONE</span>
+            <span className="text-[10px] text-emerald-400 font-bold uppercase tracking-wider block">ตัดเสร็จ</span>
             <span className="text-xl font-black text-emerald-400 font-heading">
               {completedCount}
             </span>
           </div>
           <div className="bg-[#0A0A0B] p-3 rounded-2xl border border-white/5">
-            <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider block">REVENUE</span>
+            <span className="text-[10px] text-gray-400 font-bold uppercase tracking-wider block">รายได้วันนี้</span>
             <span className="text-xs font-black text-[#FACC15] font-heading mt-1 block">
               ฿{todayTotalRevenue.toLocaleString()}
             </span>
@@ -135,7 +135,7 @@ export const QueueBoardView: React.FC<QueueBoardViewProps> = ({
                 : 'bg-[#1C1F26] text-gray-300 border-white/5 hover:border-white/20'
             }`}
           >
-            ALL BARBERS ({barbers.length})
+            ช่างทุกคน ({barbers.length})
           </button>
 
           {barbers.map((barber) => (
@@ -150,11 +150,11 @@ export const QueueBoardView: React.FC<QueueBoardViewProps> = ({
               }`}
             >
               <img
-                src={barber.avatar || 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=500&auto=format&fit=crop&q=80'}
+                src={barber.avatar || '/barber_ek.jpg'}
                 alt={barber.name}
                 referrerPolicy="no-referrer"
                 onError={(e) => {
-                  e.currentTarget.src = 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=500&auto=format&fit=crop&q=80';
+                  e.currentTarget.src = '/barber_ek.jpg';
                 }}
                 className="w-5 h-5 rounded-full object-cover border border-black/20"
               />
@@ -167,7 +167,7 @@ export const QueueBoardView: React.FC<QueueBoardViewProps> = ({
         <div className="flex items-center justify-between text-xs px-2 text-gray-400 font-bold uppercase tracking-wider">
           <span className="flex items-center gap-1.5">
             <Calendar className="w-3.5 h-3.5 text-[#FACC15]" />
-            <span>DATE: <strong className="text-white">{selectedDateFilter === todayStr ? 'TODAY (' + formatThaiDate(todayStr, 'short') + ')' : formatThaiDate(selectedDateFilter, 'short')}</strong></span>
+            <span>วันที่: <strong className="text-white">{selectedDateFilter === todayStr ? 'วันนี้ (' + formatThaiDate(todayStr, 'short') + ')' : formatThaiDate(selectedDateFilter, 'short')}</strong></span>
           </span>
 
           <div className="flex items-center gap-1.5">
@@ -178,7 +178,7 @@ export const QueueBoardView: React.FC<QueueBoardViewProps> = ({
                 selectedDateFilter === todayStr ? 'bg-[#FACC15] text-black' : 'text-gray-400 hover:text-white bg-[#1C1F26]'
               }`}
             >
-              TODAY
+              วันนี้
             </button>
             <button
               type="button"
@@ -187,7 +187,7 @@ export const QueueBoardView: React.FC<QueueBoardViewProps> = ({
                 selectedDateFilter === 'all' ? 'bg-[#FACC15] text-black' : 'text-gray-400 hover:text-white bg-[#1C1F26]'
               }`}
             >
-              ALL
+              ทั้งหมด
             </button>
           </div>
         </div>
@@ -263,7 +263,7 @@ export const QueueBoardView: React.FC<QueueBoardViewProps> = ({
                   <div className="flex items-center justify-between text-gray-400 font-medium">
                     <span>{b.serviceName} ({b.durationMinutes} นาที)</span>
                     <span className="text-[#FACC15] font-black font-heading text-sm">
-                      ฿{b.servicePrice.toLocaleString()}
+                      ฿{(b.servicePrice || 0).toLocaleString()}
                     </span>
                   </div>
 
@@ -286,11 +286,11 @@ export const QueueBoardView: React.FC<QueueBoardViewProps> = ({
 
                     {isCompleted ? (
                       <span className="px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 font-bold text-[10px] border border-blue-500/30">
-                        ชำระแล้ว • ค่าคอมช่าง 50% (฿{Math.round(b.servicePrice * 0.5)})
+                        ชำระแล้ว • ค่าคอมช่าง 50% (฿{Math.round((b.servicePrice || 0) * 0.5)})
                       </span>
                     ) : (
                       <span className="text-[10px] text-gray-400">
-                        คงเหลือจ่ายหน้าร้าน: ฿{Math.max(0, b.servicePrice - (b.depositPaid ? (b.depositAmount || 100) : 0))}
+                        คงเหลือจ่ายหน้าร้าน: ฿{Math.max(0, (b.servicePrice || 0) - (b.depositPaid ? (b.depositAmount || 100) : 0))}
                       </span>
                     )}
                   </div>
@@ -312,9 +312,9 @@ export const QueueBoardView: React.FC<QueueBoardViewProps> = ({
                   <button
                     type="button"
                     onClick={() => onSelectBookingForTicket(b)}
-                    className="text-[11px] font-bold uppercase text-gray-400 hover:text-white underline cursor-pointer"
+                    className="text-[11px] font-bold text-gray-400 hover:text-white underline cursor-pointer"
                   >
-                    E-TICKET
+                    ดูตั๋วคิว
                   </button>
 
                   <div className="flex items-center gap-2 flex-wrap">
@@ -339,7 +339,7 @@ export const QueueBoardView: React.FC<QueueBoardViewProps> = ({
                         className="px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white font-black text-xs uppercase tracking-wider flex items-center gap-1 border border-white/10 cursor-pointer active:scale-95"
                       >
                         <Play className="w-3 h-3 fill-current text-[#FACC15]" />
-                        <span>START CUT</span>
+                        <span>เริ่มตัดผม</span>
                       </button>
                     )}
 
@@ -364,7 +364,7 @@ export const QueueBoardView: React.FC<QueueBoardViewProps> = ({
                     {/* If Completed, can revert or stay */}
                     {b.status === 'completed' && (
                       <span className="px-3 py-1.5 rounded-xl bg-emerald-500/20 text-emerald-400 text-xs font-black uppercase tracking-wider border border-emerald-500/40 flex items-center gap-1">
-                        <CheckCircle className="w-3.5 h-3.5" /> COMPLETED
+                        <CheckCircle className="w-3.5 h-3.5" /> เสร็จสิ้นแล้ว
                       </span>
                     )}
 
@@ -378,7 +378,7 @@ export const QueueBoardView: React.FC<QueueBoardViewProps> = ({
                           }
                         }}
                         className="p-2 rounded-xl bg-[#0A0A0B] hover:bg-rose-950 text-gray-400 hover:text-rose-400 border border-white/10 transition-colors cursor-pointer"
-                        title="Cancel Queue"
+                        title="ยกเลิกคิวนี้"
                       >
                         <X className="w-4 h-4" />
                       </button>
@@ -390,7 +390,7 @@ export const QueueBoardView: React.FC<QueueBoardViewProps> = ({
                         onClick={() => b.id && onUpdateStatus(b.id, 'confirmed')}
                         className="px-2.5 py-1.5 rounded-xl bg-[#0A0A0B] hover:bg-[#1C1F26] text-gray-300 text-xs font-bold uppercase tracking-wider cursor-pointer"
                       >
-                        RESTORE
+                        กู้คืนคิว
                       </button>
                     )}
                   </div>

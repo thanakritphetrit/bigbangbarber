@@ -24,23 +24,30 @@ export const THAI_DAYS_SHORT = [
  * e.g. "พุธที่ 2 กันยายน 2569"
  */
 export function formatThaiDate(dateStr: string, format: 'full' | 'short' | 'medium' = 'medium'): string {
-  if (!dateStr) return '';
-  const [yearStr, monthStr, dayStr] = dateStr.split('-');
+  if (!dateStr || typeof dateStr !== 'string') return '';
+  const parts = dateStr.split('-');
+  if (parts.length < 3) return dateStr;
+  const [yearStr, monthStr, dayStr] = parts;
   const year = parseInt(yearStr, 10);
   const monthIdx = parseInt(monthStr, 10) - 1;
   const day = parseInt(dayStr, 10);
   
+  if (isNaN(year) || isNaN(monthIdx) || isNaN(day) || monthIdx < 0 || monthIdx > 11) {
+    return dateStr;
+  }
+
   const dateObj = new Date(year, monthIdx, day);
-  const dayOfWeek = THAI_DAYS_SHORT[dateObj.getDay()];
+  const dayIndex = isNaN(dateObj.getDay()) ? 0 : dateObj.getDay();
+  const dayOfWeek = THAI_DAYS_SHORT[dayIndex] || '';
   const thaiYear = year + 543;
 
   if (format === 'short') {
-    return `${day} ${THAI_MONTHS_SHORT[monthIdx]} ${thaiYear.toString().slice(-2)}`;
+    return `${day} ${THAI_MONTHS_SHORT[monthIdx] || ''} ${thaiYear.toString().slice(-2)}`;
   }
   if (format === 'full') {
-    return `วัน${THAI_DAYS[dateObj.getDay()]}ที่ ${day} ${THAI_MONTHS[monthIdx]} ${thaiYear}`;
+    return `วัน${THAI_DAYS[dayIndex] || ''}ที่ ${day} ${THAI_MONTHS[monthIdx] || ''} ${thaiYear}`;
   }
-  return `${dayOfWeek} ${day} ${THAI_MONTHS_SHORT[monthIdx]} ${thaiYear}`;
+  return `${dayOfWeek} ${day} ${THAI_MONTHS_SHORT[monthIdx] || ''} ${thaiYear}`;
 }
 
 /**

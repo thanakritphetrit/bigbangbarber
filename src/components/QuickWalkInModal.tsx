@@ -94,7 +94,8 @@ export const QuickWalkInModal: React.FC<QuickWalkInModalProps> = ({
       const finalPrice = selectedService?.price || 350;
       const isPaidUpfront = paymentChoice !== 'pay_later';
       const paidMethod: PaymentMethod = paymentChoice === 'cash' ? 'cash' : 'promptpay_qr';
-      const barberCommission = isPaidUpfront ? Math.round(finalPrice * 0.5) : undefined;
+      const barberRate = selectedBarber?.commissionRate || 50;
+      const barberCommission = isPaidUpfront ? Math.round((finalPrice * barberRate) / 100) : undefined;
       const shopShare = isPaidUpfront ? finalPrice - (barberCommission || 0) : undefined;
 
       const newBooking: Omit<Booking, 'id'> = {
@@ -120,7 +121,7 @@ export const QuickWalkInModal: React.FC<QuickWalkInModalProps> = ({
         remainingAmount: isPaidUpfront ? 0 : finalPrice,
         barberCommission,
         shopShare,
-        commissionRate: 50,
+        commissionRate: barberRate,
         settledAt: isPaidUpfront ? Date.now() : undefined
       };
 

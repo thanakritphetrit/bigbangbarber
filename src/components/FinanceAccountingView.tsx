@@ -35,9 +35,11 @@ interface FinanceAccountingViewProps {
   barbers: Barber[];
   expenses: ShopExpense[];
   transactions: ShopTransaction[];
-  shopInfo: ShopInfo;
+  shopInfo?: ShopInfo;
   onAddExpense: (expense: Omit<ShopExpense, 'id'>) => Promise<string>;
   onDeleteExpense: (expenseId: string) => Promise<void>;
+  onOpenDepositModal?: (booking: Booking) => void;
+  onOpenCheckoutModal?: (booking: Booking) => void;
 }
 
 export const FinanceAccountingView: React.FC<FinanceAccountingViewProps> = ({
@@ -47,7 +49,9 @@ export const FinanceAccountingView: React.FC<FinanceAccountingViewProps> = ({
   transactions,
   shopInfo,
   onAddExpense,
-  onDeleteExpense
+  onDeleteExpense,
+  onOpenDepositModal,
+  onOpenCheckoutModal
 }) => {
   const [dateFilter, setDateFilter] = useState<'today' | 'week' | 'month' | 'all'>('today');
   const [activeSubTab, setActiveSubTab] = useState<'overview' | 'barbers' | 'expenses' | 'transactions'>('overview');
@@ -117,12 +121,12 @@ export const FinanceAccountingView: React.FC<FinanceAccountingViewProps> = ({
     // Barber Commission (50%)
     // Each completed haircut generates 50% commission for the barber
     const totalBarberCommission = completedBookings.reduce((sum, b) => {
-      const rate = b.commissionRate || shopInfo.defaultCommissionRate || 50;
-      return sum + Math.round((b.servicePrice * rate) / 100);
+      const rate = b.commissionRate || shopInfo?.defaultCommissionRate || 50;
+      return sum + Math.round(((b.servicePrice || 0) * rate) / 100);
     }, 0);
 
     // Total Expenses
-    const totalExpenses = filteredData.filteredExpenses.reduce((sum, e) => sum + e.amount, 0);
+    const totalExpenses = filteredData.filteredExpenses.reduce((sum, e) => sum + (e.amount || 0), 0);
 
     // Net Shop Profit = Total Revenue - Total Barber Commission - Total Expenses
     const shopGrossShare = totalRevenue - totalBarberCommission;
@@ -140,13 +144,13 @@ export const FinanceAccountingView: React.FC<FinanceAccountingViewProps> = ({
 
   // Barber Commission breakdown per barber (50%)
   const barberCommissionStats = useMemo(() => {
-    return barbers.map(barber => {
-      const barberBookings = filteredData.filteredBookings.filter(
+    return (barbers || []).map(barber => {
+      const barberBookings = (filteredData.filteredBookings || []).filter(
         b => b.barberId === barber.id && b.status === 'completed'
       );
       const totalCuts = barberBookings.length;
-      const totalSales = barberBookings.reduce((sum, b) => sum + b.servicePrice, 0);
-      const rate = barber.commissionRate || shopInfo.defaultCommissionRate || 50;
+      const totalSales = barberBookings.reduce((sum, b) => sum + (b.servicePrice || 0), 0);
+      const rate = barber.commissionRate || shopInfo?.defaultCommissionRate || 50;
       const commissionEarned = Math.round((totalSales * rate) / 100);
       const shopEarned = totalSales - commissionEarned;
 
@@ -492,7 +496,7 @@ export const FinanceAccountingView: React.FC<FinanceAccountingViewProps> = ({
 
                     <div className="flex items-center gap-3">
                       <span className="font-black font-mono text-rose-400 text-sm">
-                        -฿{exp.amount.toLocaleString()}
+                        -฿{(exp.amount || 0).toLocaleString()}
                       </span>
                       <button
                         type="button"
@@ -550,7 +554,7 @@ export const FinanceAccountingView: React.FC<FinanceAccountingViewProps> = ({
 
                     <div className="text-right">
                       <span className="font-mono font-black text-sm text-emerald-400 block">
-                        +฿{(b.status === 'completed' ? b.servicePrice : (b.depositAmount || 100)).toLocaleString()}
+                        +฿{(b.status === 'completed' ? (b.servicePrice || 0) : (b.depositAmount || 100)).toLocaleString()}
                       </span>
                       <span className="text-[10px] text-gray-400 uppercase font-bold">
                         {b.status === 'completed' ? 'ชำระครบถ้วน' : 'มัดจำแล้ว'}

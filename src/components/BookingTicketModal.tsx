@@ -208,7 +208,7 @@ export const BookingTicketModal: React.FC<BookingTicketModalProps> = ({
               <div className="flex items-center justify-between">
                 <span className="text-gray-400 font-bold uppercase text-[11px]">ค่าบริการรวม:</span>
                 <span className="text-base font-black text-white font-heading">
-                  ฿{booking.servicePrice.toLocaleString()}
+                  ฿{(booking.servicePrice || 0).toLocaleString()}
                 </span>
               </div>
 
@@ -228,7 +228,7 @@ export const BookingTicketModal: React.FC<BookingTicketModalProps> = ({
               <div className="flex items-center justify-between pt-1 border-t border-white/5">
                 <span className="text-gray-400 font-black uppercase">คงเหลือชำระที่ร้าน:</span>
                 <span className="text-xl font-black text-[#FACC15] font-heading">
-                  ฿{Math.max(0, booking.servicePrice - (booking.depositPaid ? (booking.depositAmount || 100) : 0)).toLocaleString()}
+                  ฿{Math.max(0, (booking.servicePrice || 0) - (booking.depositPaid ? (booking.depositAmount || 100) : 0)).toLocaleString()}
                 </span>
               </div>
 

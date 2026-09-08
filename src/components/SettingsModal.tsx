@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   X, 
   Settings, 
@@ -26,10 +26,17 @@ import {
   Eye,
   EyeOff,
   KeyRound,
-  RotateCcw
+  RotateCcw,
+  QrCode,
+  Upload,
+  Camera,
+  Image as ImageIcon,
+  CheckCircle2,
+  Building
 } from 'lucide-react';
-import { Barber, Booking } from '../types';
+import { Barber, Booking, ShopInfo } from '../types';
 import { SHOP_INFO } from '../data/mockData';
+import { generatePromptPayQRDataUrl } from '../utils/promptpay';
 
 export interface ShopSettingsState {
   isOnlineBookingOpen: boolean;
@@ -41,6 +48,18 @@ export interface ShopSettingsState {
   shopNotice: string;
   hapticEnabled: boolean;
 }
+
+const COMMON_BANKS = [
+  'พร้อมเพย์ (ทุกธนาคาร)',
+  'ธนาคารกสิกรไทย (KBANK)',
+  'ธนาคารไทยพาณิชย์ (SCB)',
+  'ธนาคารกรุงเทพ (BBL)',
+  'ธนาคารกรุงไทย (KTB)',
+  'ธนาคารกรุงศรีอยุธยา (BAY)',
+  'ธนาคารทหารไทยธนชาต (TTB)',
+  'ธนาคารออมสิน (GSB)',
+  'ทรูมันนี่ วอลเล็ท (TrueMoney)'
+];
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -54,7 +73,9 @@ interface SettingsModalProps {
   onShowToast: (msg: string, type?: 'success' | 'error' | 'info') => void;
   onEditBarber?: (barber: Barber) => void;
   onAddNewBarber?: () => void;
-  initialTab?: 'shop' | 'barbers' | 'sound' | 'database' | 'security';
+  initialTab?: 'shop' | 'qr' | 'barbers' | 'sound' | 'database' | 'security';
+  shopInfo?: ShopInfo;
+  onUpdateShopInfo?: (updated: ShopInfo) => Promise<void> | void;
 }
 
 export const SettingsModal: React.FC<SettingsModalProps> = ({
@@ -69,15 +90,27 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   onShowToast,
   onEditBarber,
   onAddNewBarber,
-  initialTab
+  initialTab,
+  shopInfo,
+  onUpdateShopInfo
 }) => {
-  const [activeSubTab, setActiveSubTab] = useState<'shop' | 'barbers' | 'sound' | 'database' | 'security'>('shop');
+  const [activeSubTab, setActiveSubTab] = useState<'shop' | 'qr' | 'barbers' | 'sound' | 'database' | 'security'>('shop');
   const [phoneInput, setPhoneInput] = useState(settings.shopPhone || SHOP_INFO.phone);
   const [noticeInput, setNoticeInput] = useState(settings.shopNotice || 'เปิดรับจองตามปกติ 10:00 - 20:00 น.');
   const [pinInput, setPinInput] = useState(settings.staffPin || '1234');
   const [showPinText, setShowPinText] = useState(false);
   const [showCurrentPin, setShowCurrentPin] = useState(false);
   const [isResetting, setIsResetting] = useState(false);
+
+  // QR Code Settings State
+  const [promptPayNumber, setPromptPayNumber] = useState(shopInfo?.promptPayNumber || shopInfo?.phone || '089-765-4321');
+  const [promptPayName, setPromptPayName] = useState(shopInfo?.promptPayName || shopInfo?.name || 'บิ๊กแบง บาร์เบอร์ (BIGBANG BARBER)');
+  const [promptPayBank, setPromptPayBank] = useState(shopInfo?.promptPayBank || COMMON_BANKS[0]);
+  const [promptPayMode, setPromptPayMode] = useState<'auto_generate' | 'custom_image'>(shopInfo?.promptPayMode || 'auto_generate');
+  const [promptPayQrImageUrl, setPromptPayQrImageUrl] = useState(shopInfo?.promptPayQrImageUrl || '');
+  const [previewQrUrl, setPreviewQrUrl] = useState<string>('');
+  const [isSavingQr, setIsSavingQr] = useState(false);
+  const qrFileInputRef = useRef<HTMLInputElement>(null);
 
   // Sync state whenever modal opens or settings update
   useEffect(() => {
@@ -88,8 +121,85 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
       if (initialTab) {
         setActiveSubTab(initialTab);
       }
+      if (shopInfo) {
+        setPromptPayNumber(shopInfo.promptPayNumber || shopInfo.phone || '089-765-4321');
+        setPromptPayName(shopInfo.promptPayName || shopInfo.name || 'บิ๊กแบง บาร์เบอร์ (BIGBANG BARBER)');
+        setPromptPayBank(shopInfo.promptPayBank || COMMON_BANKS[0]);
+        setPromptPayMode(shopInfo.promptPayMode || 'auto_generate');
+        setPromptPayQrImageUrl(shopInfo.promptPayQrImageUrl || '');
+      }
     }
-  }, [isOpen, settings.shopPhone, settings.shopNotice, settings.staffPin, initialTab]);
+  }, [isOpen, settings.shopPhone, settings.shopNotice, settings.staffPin, initialTab, shopInfo]);
+
+  // Update dynamic QR preview
+  useEffect(() => {
+    if (promptPayMode === 'auto_generate') {
+      const cleanTarget = promptPayNumber.replace(/[^0-9]/g, '');
+      if (cleanTarget.length >= 9) {
+        generatePromptPayQRDataUrl(cleanTarget, 350)
+          .then(url => setPreviewQrUrl(url))
+          .catch(() => setPreviewQrUrl(''));
+      } else {
+        setPreviewQrUrl('');
+      }
+    } else {
+      setPreviewQrUrl(promptPayQrImageUrl);
+    }
+  }, [promptPayNumber, promptPayMode, promptPayQrImageUrl]);
+
+  const handleQrFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      onShowToast('กรุณาเลือกไฟล์รูปภาพ (PNG, JPG, WEBP)', 'error');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const result = event.target?.result as string;
+      if (result) {
+        setPromptPayQrImageUrl(result);
+        setPromptPayMode('custom_image');
+        onShowToast('อัปโหลดรูปภาพ QR Code สำเร็จ', 'success');
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleRemoveCustomImage = () => {
+    setPromptPayQrImageUrl('');
+    setPromptPayMode('auto_generate');
+    if (qrFileInputRef.current) {
+      qrFileInputRef.current.value = '';
+    }
+    onShowToast('สลับกลับมาใช้ระบบสร้าง QR อัตโนมัติ', 'info');
+  };
+
+  const handleSaveQrSettings = async () => {
+    if (!onUpdateShopInfo) {
+      onShowToast('ไม่สามารถเชื่อมต่อระบบบันทึกได้', 'error');
+      return;
+    }
+    setIsSavingQr(true);
+    try {
+      await onUpdateShopInfo({
+        ...(shopInfo || SHOP_INFO),
+        promptPayNumber,
+        promptPayName,
+        promptPayBank,
+        promptPayMode,
+        promptPayQrImageUrl
+      });
+      onShowToast('บันทึกการตั้งค่า QR Code รับเงินสำเร็จเรียบร้อย!', 'success');
+    } catch (err) {
+      console.error(err);
+      onShowToast('เกิดข้อผิดพลาดในการบันทึก QR Code', 'error');
+    } finally {
+      setIsSavingQr(false);
+    }
+  };
 
   if (!isOpen) return null;
 
@@ -211,6 +321,19 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
           <button
             type="button"
+            onClick={() => setActiveSubTab('qr')}
+            className={`px-3 py-2 rounded-xl text-xs font-black uppercase tracking-wider flex items-center gap-1.5 shrink-0 transition-all cursor-pointer ${
+              activeSubTab === 'qr'
+                ? 'bg-[#FACC15] text-black shadow-md'
+                : 'text-gray-400 hover:text-white hover:bg-[#1C1F26]'
+            }`}
+          >
+            <QrCode className="w-3.5 h-3.5" />
+            <span>QR โค้ดรับเงิน</span>
+          </button>
+
+          <button
+            type="button"
             onClick={() => setActiveSubTab('barbers')}
             className={`px-3 py-2 rounded-xl text-xs font-black uppercase tracking-wider flex items-center gap-1.5 shrink-0 transition-all cursor-pointer ${
               activeSubTab === 'barbers'
@@ -219,7 +342,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             }`}
           >
             <Users className="w-3.5 h-3.5" />
-            <span>สถานะช่าง (3)</span>
+            <span>สถานะช่าง ({barbers.length})</span>
           </button>
 
           <button
@@ -286,6 +409,28 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 >
                   <Edit3 className="w-3.5 h-3.5" />
                   <span>เปลี่ยนรหัส PIN</span>
+                </button>
+              </div>
+
+              {/* Quick PromptPay / QR Settings Card */}
+              <div className="bg-[#0A0A0B] p-4 rounded-2xl border border-white/5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-1.5 font-black uppercase tracking-wider text-[#FACC15] text-xs">
+                    <QrCode className="w-4 h-4" />
+                    <span>QR Code รับเงิน & พร้อมเพย์ (PROMPTPAY)</span>
+                  </div>
+                  <p className="text-gray-400 text-[11px] leading-relaxed">
+                    เลขพร้อมเพย์: <strong className="font-mono text-white tracking-wider bg-white/10 px-2 py-0.5 rounded ml-1 font-bold">{promptPayNumber || 'ยังไม่ได้ตั้งค่า'}</strong>
+                    <span className="text-gray-500 ml-1.5">(แสดงตอนลูกค้ามัดจำและชำระเงิน)</span>
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setActiveSubTab('qr')}
+                  className="px-3 py-2 rounded-xl bg-[#FACC15] hover:bg-yellow-400 text-black font-black uppercase text-xs cursor-pointer flex items-center gap-1.5 shadow-md active:scale-95 shrink-0"
+                >
+                  <Edit3 className="w-3.5 h-3.5" />
+                  <span>เปลี่ยน QR Code</span>
                 </button>
               </div>
 
@@ -385,6 +530,251 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   <span>บันทึกข้อมูลร้าน</span>
                 </button>
               </form>
+            </div>
+          )}
+
+          {/* QR CODE & PROMPTPAY SETTINGS */}
+          {activeSubTab === 'qr' && (
+            <div className="space-y-4 text-xs animate-in fade-in">
+              <div className="bg-[#0A0A0B] p-4 rounded-2xl border border-white/5 space-y-1">
+                <h4 className="font-black uppercase tracking-tight text-[#FACC15] text-sm flex items-center gap-2">
+                  <QrCode className="w-4 h-4" />
+                  <span>ตั้งค่า QR Code รับเงิน (PROMPTPAY / ร้านค้า)</span>
+                </h4>
+                <p className="text-gray-400 text-[11px] leading-relaxed">
+                  ปรับเปลี่ยนหมายเลขพร้อมเพย์ หรืออัปโหลดรูปภาพ QR Code ของร้านสำหรับใช้ในหน้าชำระเงินมัดจำและการเช็คบิลหน้าร้าน
+                </p>
+              </div>
+
+              {/* Mode Switcher */}
+              <div className="grid grid-cols-2 gap-2 bg-[#0A0A0B] p-1.5 rounded-2xl border border-white/5">
+                <button
+                  type="button"
+                  onClick={() => setPromptPayMode('auto_generate')}
+                  className={`py-2.5 px-3 rounded-xl font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all cursor-pointer ${
+                    promptPayMode === 'auto_generate'
+                      ? 'bg-[#FACC15] text-black shadow-md'
+                      : 'text-gray-400 hover:text-white'
+                  }`}
+                >
+                  <Sparkles className="w-3.5 h-3.5" />
+                  <span>สร้าง QR อัตโนมัติ</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setPromptPayMode('custom_image')}
+                  className={`py-2.5 px-3 rounded-xl font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all cursor-pointer ${
+                    promptPayMode === 'custom_image'
+                      ? 'bg-[#FACC15] text-black shadow-md'
+                      : 'text-gray-400 hover:text-white'
+                  }`}
+                >
+                  <Upload className="w-3.5 h-3.5" />
+                  <span>อัปโหลดรูป QR ร้าน</span>
+                </button>
+              </div>
+
+              {/* Auto Generate Fields */}
+              {promptPayMode === 'auto_generate' ? (
+                <div className="bg-[#0A0A0B] p-4 rounded-2xl border border-white/5 space-y-3">
+                  <div className="space-y-1">
+                    <label className="text-gray-300 font-bold uppercase tracking-wider text-[11px] flex items-center justify-between">
+                      <span className="flex items-center gap-1.5">
+                        <Phone className="w-3.5 h-3.5 text-[#FACC15]" />
+                        <span>หมายเลขพร้อมเพย์ (PromptPay Number)</span>
+                      </span>
+                      <span className="text-[10px] text-[#FACC15] font-mono">10 หรือ 13 หลัก</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={promptPayNumber}
+                      onChange={(e) => setPromptPayNumber(e.target.value)}
+                      placeholder="เช่น 089-765-4321 หรือ 1100400123456"
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-[#1C1F26] border border-white/10 text-white font-mono font-bold text-xs focus:outline-none focus:border-[#FACC15]"
+                    />
+                    <p className="text-gray-500 text-[10px]">
+                      รองรับเบอร์โทรศัพท์มือถือที่ผูกพร้อมเพย์ หรือเลขประจำตัวประชาชน/ผู้เสียภาษี
+                    </p>
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-gray-300 font-bold uppercase tracking-wider text-[11px] flex items-center gap-1.5">
+                      <Building className="w-3.5 h-3.5 text-[#FACC15]" />
+                      <span>ชื่อบัญชี / ชื่อร้านค้า (Account / Shop Name)</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={promptPayName}
+                      onChange={(e) => setPromptPayName(e.target.value)}
+                      placeholder="เช่น BIGBANG BARBER หรือ นายสมชาย ใจดี"
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-[#1C1F26] border border-white/10 text-white font-bold text-xs focus:outline-none focus:border-[#FACC15]"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-gray-300 font-bold uppercase tracking-wider text-[11px] flex items-center gap-1.5">
+                      <Building className="w-3.5 h-3.5 text-[#FACC15]" />
+                      <span>ธนาคารผู้ให้บริการ (Bank Name)</span>
+                    </label>
+                    <select
+                      value={promptPayBank}
+                      onChange={(e) => setPromptPayBank(e.target.value)}
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-[#1C1F26] border border-white/10 text-white font-bold text-xs focus:outline-none focus:border-[#FACC15] cursor-pointer"
+                    >
+                      {COMMON_BANKS.map(bank => (
+                        <option key={bank} value={bank} className="bg-[#1C1F26] text-white">
+                          {bank}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+              ) : (
+                /* Custom Image Upload */
+                <div className="bg-[#0A0A0B] p-4 rounded-2xl border border-white/5 space-y-3">
+                  <div className="space-y-2">
+                    <label className="text-gray-300 font-bold uppercase tracking-wider text-[11px] flex items-center gap-1.5">
+                      <ImageIcon className="w-3.5 h-3.5 text-[#FACC15]" />
+                      <span>อัปโหลดรูปภาพ QR Code ของร้าน</span>
+                    </label>
+
+                    <input 
+                      type="file" 
+                      ref={qrFileInputRef}
+                      onChange={handleQrFileUpload}
+                      accept="image/*"
+                      className="hidden" 
+                    />
+
+                    <div 
+                      onClick={() => qrFileInputRef.current?.click()}
+                      className="border-2 border-dashed border-white/15 hover:border-[#FACC15] rounded-2xl p-6 text-center cursor-pointer transition-all bg-[#1C1F26]/50 hover:bg-[#1C1F26] group"
+                    >
+                      <div className="w-12 h-12 mx-auto rounded-2xl bg-white/5 group-hover:bg-[#FACC15]/20 flex items-center justify-center text-[#FACC15] mb-2 transition-all">
+                        <Upload className="w-6 h-6" />
+                      </div>
+                      <p className="text-xs font-bold text-white group-hover:text-[#FACC15] transition-all">
+                        คลิกเพื่อเลือกไฟล์รูปภาพ QR Code
+                      </p>
+                      <p className="text-[10px] text-gray-400 mt-1">
+                        รองรับไฟล์ PNG, JPG หรือ WEBP (รูป QR จากแอปธนาคาร)
+                      </p>
+                    </div>
+
+                    {promptPayQrImageUrl && (
+                      <div className="flex items-center justify-between p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">
+                        <span className="text-xs font-bold flex items-center gap-1.5">
+                          <CheckCircle2 className="w-4 h-4" />
+                          <span>มีรูปภาพ QR โค้ดของร้านแล้ว</span>
+                        </span>
+                        <button
+                          type="button"
+                          onClick={handleRemoveCustomImage}
+                          className="px-2.5 py-1 rounded-lg bg-rose-500/20 text-rose-400 hover:bg-rose-500/30 text-[10px] font-bold cursor-pointer transition-all"
+                        >
+                          ลบรูปภาพ
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-gray-300 font-bold uppercase tracking-wider text-[11px] block">
+                      ชื่อบัญชี / ชื่อร้านค้า
+                    </label>
+                    <input
+                      type="text"
+                      value={promptPayName}
+                      onChange={(e) => setPromptPayName(e.target.value)}
+                      placeholder="เช่น BIGBANG BARBER"
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-[#1C1F26] border border-white/10 text-white font-bold text-xs focus:outline-none focus:border-[#FACC15]"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Realistic PromptPay Live Preview */}
+              <div className="bg-[#0A0A0B] p-4 rounded-2xl border border-white/10 space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-black uppercase tracking-wider text-[#FACC15] flex items-center gap-1.5">
+                    <Sparkles className="w-3.5 h-3.5" />
+                    <span>ตัวอย่าง QR Code ที่ลูกค้าจะเห็น (LIVE PREVIEW)</span>
+                  </span>
+                  <span className="text-[10px] text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded font-bold font-mono">
+                    พร้อมใช้งาน
+                  </span>
+                </div>
+
+                {/* PromptPay Standard Thai Card Frame */}
+                <div className="max-w-[260px] mx-auto bg-white rounded-2xl overflow-hidden shadow-2xl border-2 border-slate-200 text-slate-800">
+                  {/* PromptPay Official Header Banner */}
+                  <div className="bg-[#1A3F71] p-3 text-white text-center">
+                    <div className="flex items-center justify-center gap-1.5">
+                      <div className="w-5 h-5 rounded bg-white text-[#1A3F71] flex items-center justify-center font-black text-xs">
+                        P
+                      </div>
+                      <span className="font-black text-sm tracking-wide">PromptPay</span>
+                    </div>
+                    <p className="text-[9px] text-slate-200 tracking-wider uppercase font-semibold mt-0.5">
+                      พร้อมเพย์ • THAI QR PAYMENT
+                    </p>
+                  </div>
+
+                  {/* QR Image Area */}
+                  <div className="p-4 flex flex-col items-center justify-center bg-white">
+                    {previewQrUrl ? (
+                      <img 
+                        src={previewQrUrl} 
+                        alt="PromptPay QR Preview" 
+                        className="w-44 h-44 object-contain rounded-lg shadow-sm"
+                      />
+                    ) : (
+                      <div className="w-44 h-44 rounded-lg bg-slate-100 border-2 border-dashed border-slate-300 flex flex-col items-center justify-center text-slate-400 p-3 text-center">
+                        <QrCode className="w-8 h-8 mb-1 opacity-50" />
+                        <span className="text-[11px] font-bold">กำลังสร้าง QR Code...</span>
+                        <span className="text-[9px] mt-0.5">กรุณากรอกเลขพร้อมเพย์ให้ถูกต้อง</span>
+                      </div>
+                    )}
+
+                    <div className="mt-2.5 text-center space-y-0.5">
+                      <p className="font-black text-xs text-slate-900 truncate max-w-[220px]">
+                        {promptPayName || 'BIGBANG BARBER'}
+                      </p>
+                      <p className="text-[11px] font-mono text-slate-600 font-bold">
+                        {promptPayNumber || '08X-XXX-XXXX'}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Footer Notice */}
+                  <div className="bg-slate-50 border-t border-slate-200 px-3 py-1.5 text-center">
+                    <p className="text-[9px] text-slate-500 font-medium">
+                      สแกนได้ด้วยทุกแอปธนาคารไทย
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Save Button */}
+              <button
+                type="button"
+                disabled={isSavingQr}
+                onClick={handleSaveQrSettings}
+                className="w-full py-3 rounded-2xl bg-[#FACC15] hover:bg-yellow-400 text-black font-black uppercase tracking-wider text-xs flex items-center justify-center gap-2 cursor-pointer shadow-xl active:scale-98 transition-all"
+              >
+                {isSavingQr ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
+                    <span>กำลังบันทึกข้อมูล QR...</span>
+                  </>
+                ) : (
+                  <>
+                    <Check className="w-4 h-4 stroke-[3]" />
+                    <span>บันทึกการตั้งค่า QR Code รับเงิน</span>
+                  </>
+                )}
+              </button>
             </div>
           )}
 

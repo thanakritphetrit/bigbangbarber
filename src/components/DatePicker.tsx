@@ -24,11 +24,12 @@ export const DatePicker: React.FC<DatePickerProps> = ({
   return (
     <div className="space-y-3.5">
       <div className="flex justify-between items-end">
-        <h3 className="text-lg sm:text-xl font-black uppercase tracking-tight font-heading flex items-center gap-2">
+        <h3 className="text-lg sm:text-xl font-black tracking-tight font-heading flex items-center gap-2">
           <span className="w-6 h-6 rounded-lg bg-[#FACC15] text-black text-xs flex items-center justify-center font-black">
             3
           </span>
-          <span>Select Date</span>
+          <span>เลือกวันที่</span>
+          <span className="text-xs text-gray-400 font-normal uppercase tracking-wider hidden sm:inline-block">Select Date</span>
         </h3>
         
         <div className="flex items-center gap-1.5">

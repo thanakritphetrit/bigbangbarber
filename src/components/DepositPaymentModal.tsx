@@ -23,7 +23,7 @@ import { PromptPaySettingsModal } from './PromptPaySettingsModal';
 interface DepositPaymentModalProps {
   isOpen: boolean;
   booking: Booking | null;
-  shopInfo: ShopInfo;
+  shopInfo?: ShopInfo;
   onClose: () => void;
   onConfirmDeposit: (bookingId: string, slipNote?: string) => Promise<void>;
   onUpdateShopInfo?: (updated: ShopInfo) => Promise<void> | void;
@@ -45,25 +45,25 @@ export const DepositPaymentModal: React.FC<DepositPaymentModalProps> = ({
   const [countdown, setCountdown] = useState<number>(900); // 15 minutes timer
   const [isQrSettingsOpen, setIsQrSettingsOpen] = useState<boolean>(false);
 
-  const depositAmount = booking?.depositAmount || shopInfo.defaultDepositAmount || 100;
-  const promptPayNumber = shopInfo.promptPayNumber || shopInfo.phone || '089-765-4321';
+  const depositAmount = booking?.depositAmount || shopInfo?.defaultDepositAmount || 100;
+  const promptPayNumber = shopInfo?.promptPayNumber || shopInfo?.phone || '089-765-4321';
   const cleanPromptPay = promptPayNumber.replace(/[^0-9]/g, '');
 
-  const isCustomQr = shopInfo.promptPayMode === 'custom_image' && !!shopInfo.promptPayQrImageUrl;
-  const currentQrImage = isCustomQr ? shopInfo.promptPayQrImageUrl : qrDataUrl;
+  const isCustomQr = shopInfo?.promptPayMode === 'custom_image' && !!shopInfo?.promptPayQrImageUrl;
+  const currentQrImage = isCustomQr ? shopInfo?.promptPayQrImageUrl : qrDataUrl;
 
   useEffect(() => {
     if (isOpen && booking) {
       setStep('qr');
       setSlipNote('');
       setCountdown(900);
-      if (shopInfo.promptPayMode !== 'custom_image') {
+      if (shopInfo?.promptPayMode !== 'custom_image') {
         generatePromptPayQRDataUrl(cleanPromptPay, depositAmount)
           .then(url => setQrDataUrl(url))
           .catch(err => console.error('QR generation error:', err));
       }
     }
-  }, [isOpen, booking, cleanPromptPay, depositAmount, shopInfo.promptPayMode, shopInfo.promptPayQrImageUrl]);
+  }, [isOpen, booking, cleanPromptPay, depositAmount, shopInfo?.promptPayMode, shopInfo?.promptPayQrImageUrl]);
 
   useEffect(() => {
     if (!isOpen || step !== 'qr') return;
@@ -187,12 +187,12 @@ export const DepositPaymentModal: React.FC<DepositPaymentModalProps> = ({
               {/* Shop PromptPay Name */}
               <div className="mt-3 pt-2 border-t border-gray-200 w-full text-center">
                 <p className="text-xs font-black text-gray-900 truncate">
-                  {shopInfo.promptPayName || shopInfo.name || 'BIGBANG BARBER'}
+                  {shopInfo?.promptPayName || shopInfo?.name || 'BIGBANG BARBER'}
                 </p>
                 <p className="text-[11px] text-gray-600 font-mono mt-0.5 font-bold">
                   เลขพร้อมเพย์: {promptPayNumber}
                 </p>
-                {shopInfo.promptPayBank && (
+                {shopInfo?.promptPayBank && (
                   <p className="text-[10px] text-gray-500">
                     {shopInfo.promptPayBank}
                   </p>

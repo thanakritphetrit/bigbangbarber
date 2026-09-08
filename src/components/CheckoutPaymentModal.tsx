@@ -23,7 +23,7 @@ import { PromptPaySettingsModal } from './PromptPaySettingsModal';
 interface CheckoutPaymentModalProps {
   isOpen: boolean;
   booking: Booking | null;
-  shopInfo: ShopInfo;
+  shopInfo?: ShopInfo;
   onClose: () => void;
   onCompleteCheckout: (
     bookingId: string, 
@@ -55,15 +55,15 @@ export const CheckoutPaymentModal: React.FC<CheckoutPaymentModalProps> = ({
   const remainingDue = Math.max(0, totalPrice - depositPaid);
   
   // Barber Commission 50%
-  const commissionRate = booking?.commissionRate || shopInfo.defaultCommissionRate || 50;
+  const commissionRate = booking?.commissionRate || shopInfo?.defaultCommissionRate || 50;
   const barberCommission = Math.round((totalPrice * commissionRate) / 100);
   const shopShare = totalPrice - barberCommission;
 
-  const promptPayNumber = shopInfo.promptPayNumber || shopInfo.phone || '089-765-4321';
+  const promptPayNumber = shopInfo?.promptPayNumber || shopInfo?.phone || '089-765-4321';
   const cleanPromptPay = promptPayNumber.replace(/[^0-9]/g, '');
 
-  const isCustomQr = shopInfo.promptPayMode === 'custom_image' && !!shopInfo.promptPayQrImageUrl;
-  const currentQrImage = isCustomQr ? shopInfo.promptPayQrImageUrl : qrDataUrl;
+  const isCustomQr = shopInfo?.promptPayMode === 'custom_image' && !!shopInfo?.promptPayQrImageUrl;
+  const currentQrImage = isCustomQr ? shopInfo?.promptPayQrImageUrl : qrDataUrl;
 
   useEffect(() => {
     if (isOpen && booking) {
@@ -77,7 +77,7 @@ export const CheckoutPaymentModal: React.FC<CheckoutPaymentModalProps> = ({
           .catch(err => console.error('Error generating checkout QR:', err));
       }
     }
-  }, [isOpen, booking, remainingDue, cleanPromptPay, shopInfo.promptPayMode, shopInfo.promptPayQrImageUrl]);
+  }, [isOpen, booking, remainingDue, cleanPromptPay, shopInfo?.promptPayMode, shopInfo?.promptPayQrImageUrl]);
 
   if (!isOpen || !booking) return null;
 
@@ -292,9 +292,9 @@ export const CheckoutPaymentModal: React.FC<CheckoutPaymentModalProps> = ({
                 <div className="mt-2.5 text-center text-xs w-full">
                   <span className="font-black text-gray-900 font-heading text-xl">฿{remainingDue}</span>
                   <p className="text-[11px] text-gray-700 font-mono mt-0.5 font-bold truncate">
-                    {promptPayNumber} ({shopInfo.promptPayName || shopInfo.name || 'Bigbang Barber'})
+                    {promptPayNumber} ({shopInfo?.promptPayName || shopInfo?.name || 'Bigbang Barber'})
                   </p>
-                  {shopInfo.promptPayBank && (
+                  {shopInfo?.promptPayBank && (
                     <p className="text-[10px] text-gray-500 font-medium">
                       {shopInfo.promptPayBank}
                     </p>

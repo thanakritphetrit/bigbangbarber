@@ -197,7 +197,7 @@ export const MyBookingsView: React.FC<MyBookingsViewProps> = ({
 
                     <div className="flex items-center gap-2">
                       <span className="text-[10px] text-gray-500 uppercase font-bold block">PRICE</span>
-                      <span className="text-white font-black font-heading text-sm">฿{b.servicePrice.toLocaleString()}</span>
+                      <span className="text-white font-black font-heading text-sm">฿{(b.servicePrice || 0).toLocaleString()}</span>
                     </div>
                   </div>
 
